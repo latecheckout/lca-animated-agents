@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/latecheckout/animated-agents-skill/releases/latest/download/animated-agents.zip"><b>Download the skill (.zip)</b></a> ·
+  <a href="https://github.com/latecheckout/animated-agents/releases/latest/download/animated-agents.zip"><b>Download the skill (.zip)</b></a> ·
   <a href="#install">Install</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="https://latecheckout.agency">Made by Late Checkout</a>
@@ -49,7 +49,7 @@ No video files. The bodies are PNGs, and the eyes and motion are drawn in code, 
 
 ### Claude.ai (web or desktop)
 
-1. [Download `animated-agents.zip`](https://github.com/latecheckout/animated-agents-skill/releases/latest/download/animated-agents.zip).
+1. [Download `animated-agents.zip`](https://github.com/latecheckout/animated-agents/releases/latest/download/animated-agents.zip).
 2. In Claude, go to **Settings → Capabilities**, make sure **Code execution** is on, then upload the zip under **Skills**.
 3. *Optional:* connect **Higgsfield** in **Settings → Connectors** to generate your own characters. Without it you can still use the three ready-made sets for free.
 4. Start a new chat and say: **"Make me some animated agents."**
@@ -61,8 +61,8 @@ No video files. The bodies are PNGs, and the eyes and motion are drawn in code, 
 ### Claude Code
 
 ```bash
-git clone https://github.com/latecheckout/animated-agents-skill.git
-cp -r animated-agents-skill/animated-agents ~/.claude/skills/
+git clone https://github.com/latecheckout/animated-agents.git
+cp -r animated-agents/animated-agents ~/.claude/skills/
 ```
 
 Then ask Claude Code to "make me some animated agents". Run `python scripts/check_setup.py` once to check Python dependencies.
@@ -113,7 +113,7 @@ You can skip the studio page and run the whole thing conversationally, or bring 
 
 **3D?** It's 2D on purpose. Glossy materials (glass, frosted, jelly) give the 3D look while staying light.
 
-**Something broke.** In the studio, click **Copy activity log** at the bottom of the page and paste it into Claude. If that doesn't sort it, [open an issue](https://github.com/latecheckout/animated-agents-skill/issues).
+**Something broke.** In the studio, click **Copy activity log** at the bottom of the page and paste it into Claude. If that doesn't sort it, [open an issue](https://github.com/latecheckout/animated-agents/issues).
 
 ## What's inside
 
