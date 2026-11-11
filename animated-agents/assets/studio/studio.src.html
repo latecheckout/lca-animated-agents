@@ -1,0 +1,1025 @@
+<title>Agent Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* LCA Labs (light only, like the LCA sites): editorial index layout. A narrow mono label column on the left, content on the right, hairline rules
+   between sections, square black buttons, warm off-white paper. The agents are the only colour on the page. */
+:root{
+  --paper:#F2F1EE; --ink:#121211; --muted:#66655F; --faint:#9C9B94; --rule:#D3D1CB; --hover:#E8E6E1; --stage:#E9E7E2;
+  --ok:#2F7D4F; --bad:#B23A2E;
+  --sans:"Geist","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --ease:cubic-bezier(0.25,1,0.5,1);
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:0 32px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit;text-underline-offset:3px}
+:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+.label{font:400 11.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.label.dim{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+p{margin:0}
+h1{font-weight:400;font-size:clamp(30px,4.2vw,46px);line-height:1.08;letter-spacing:-.03em;margin:0;text-wrap:balance;max-width:20ch}
+.sub{color:var(--muted);font-size:18px;line-height:1.45;max-width:44ch}
+
+.wrap{max-width:1180px;margin:0 auto}
+header{display:flex;align-items:center;gap:20px;padding-block:22px;flex-wrap:wrap}
+.mark{display:flex;align-items:baseline;gap:12px}
+.mark img{height:22px;width:auto;display:block;align-self:center}
+.mark span{color:var(--muted);font-size:14px}
+.steps{display:flex;gap:22px;margin-left:auto}
+.steps button{border:0;background:none;padding:0;font:400 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:flex;gap:8px}
+.steps button[aria-current="step"]{color:var(--ink);text-decoration:underline;text-underline-offset:6px}
+.steps button.done{color:var(--muted)}
+.steps button[disabled]{cursor:default}
+.credits{font:400 11.5px var(--mono);letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.credits i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.credits i.ok{background:var(--ok)}.credits i.bad{background:var(--bad)}
+
+/* index rows: label | content */
+.sec{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px 40px;padding-block:22px;border-top:1px solid var(--rule)}
+.sec.top{border-top:2px solid var(--ink)}
+@media (max-width:760px){.sec{grid-template-columns:minmax(0,1fr)}}
+.sec > .label{padding-top:4px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:46px;padding:0 22px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;border-radius:2px;white-space:nowrap;transition:opacity .2s var(--ease),transform .15s var(--ease)}
+.btn:hover{opacity:.86}.btn:active{transform:translateY(1px)}
+.btn.line{background:transparent;color:var(--ink)}
+.btn.line:hover{background:var(--hover);opacity:1}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+.btn .cost{font:400 12px var(--mono);opacity:.7;letter-spacing:.02em}
+.link{border:0;background:none;padding:0;font-size:14px;text-decoration:underline;text-underline-offset:4px;color:var(--ink)}
+.link.dim{color:var(--muted)}
+.link[disabled]{opacity:.4;cursor:not-allowed}
+.msg{font-size:14px;padding:12px 14px;border-left:2px solid var(--ink);background:var(--hover)}
+.msg.bad{border-color:var(--bad)}
+
+.screen{display:flex;flex-direction:column;animation:in .5s var(--ease)}
+@keyframes in{from{transform:translateY(8px)}}
+
+/* stage */
+.stage{position:relative;background:var(--stage);border-radius:2px;overflow:hidden;min-height:400px;transition:background .3s var(--ease)}
+.stage[data-surface="light"]{background:#E9E7E2}
+.stage[data-surface="dark"]{background:#161615}
+.cast{position:absolute;inset:40px 48px 30px;display:flex;align-items:center;justify-content:center}
+.slot{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px;border:1px solid transparent;border-radius:2px;transition:border-color .2s var(--ease)}
+.slot.pick{cursor:pointer}
+.slot[aria-current="true"]{border-color:rgba(127,127,120,.45)}
+.slot .num{font:400 10.5px var(--mono);letter-spacing:.1em;color:#8a897f}
+.pending{display:grid;place-items:center;align-content:center;gap:10px;color:#8a897f;font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.pending .bar{width:64px;height:2px;background:rgba(127,127,120,.25);overflow:hidden}
+.pending .bar i{display:block;height:100%;width:40%;background:#8a897f;animation:slide 1.2s var(--ease) infinite}
+.pending .btn{font:400 13px var(--sans);text-transform:none;letter-spacing:0}
+@keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+.stage-tag{position:absolute;top:14px;left:16px;font:400 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#8a897f;z-index:2}
+
+/* connect */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:40px;padding-block:28px 24px;align-items:center}
+@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}}
+.hero .copy{display:flex;flex-direction:column;gap:22px}
+.need{font-size:14px;color:var(--muted)}
+
+/* describe */
+textarea{width:100%;min-height:112px;resize:vertical;border:1px solid var(--rule);background:transparent;padding:14px;line-height:1.5;box-sizing:border-box;font-size:17px;border-radius:2px}
+textarea:focus{border-color:var(--ink);outline:none}
+textarea::placeholder{color:var(--faint)}
+.drop{border:1px dashed var(--rule);padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-height:64px;cursor:pointer;border-radius:2px;transition:border-color .2s var(--ease)}
+.drop:hover,.drop.over{border-color:var(--ink)}
+.drop .hint{color:var(--muted);font-size:14px;flex:1;min-width:180px}
+.thumb{position:relative;width:48px;height:48px;overflow:hidden;border-radius:2px}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:10px;line-height:16px;padding:0}
+.mats{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.mat{border:1px solid var(--rule);background:transparent;padding:10px 6px 9px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12.5px;border-radius:2px;transition:border-color .2s var(--ease),background .2s var(--ease)}
+.mat:hover{background:var(--hover)}
+.mat[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.mat .sw{width:52px;height:52px;object-fit:contain;display:block}
+.count{display:flex;gap:0}
+.count button{width:46px;height:40px;border:1px solid var(--rule);background:transparent;margin-left:-1px;font:400 14px var(--mono)}
+.count button:first-child{margin-left:0}
+.count button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);position:relative}
+.go{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+
+/* agents */
+.agents-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-block:22px 16px;flex-wrap:wrap}
+.agents-top h2{font-weight:400;font-size:28px;letter-spacing:-.02em;margin:0}
+.agents-top .note{color:var(--muted);font-size:14px}
+.setbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:14px}
+.ctrls{display:flex;flex-wrap:wrap;gap:0 56px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.ctrl{display:flex;flex-direction:column;gap:12px;padding:18px 0}
+.opts{display:flex;flex-wrap:nowrap;gap:0}
+@media (max-width:540px){.opts{flex-wrap:wrap}.ctrls{gap:0 28px}}
+.opts button{white-space:nowrap}
+.opts button{height:32px;padding:0 12px;border:1px solid var(--rule);background:transparent;margin:0 -1px -1px 0;font-size:13px;color:var(--muted);transition:background .2s var(--ease),color .2s var(--ease)}
+.opts button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);position:relative}
+.sizes{display:flex;flex-direction:column;gap:14px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.sizerow{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.sizerow .label{width:44px}
+.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding:18px 0;border-bottom:1px solid var(--rule)}
+@media (max-width:760px){.detail{grid-template-columns:minmax(0,1fr)}}
+.field{display:grid;grid-template-columns:70px minmax(0,1fr) 40px;gap:12px;align-items:center;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.detail textarea{min-height:84px;font-size:14px}
+.finish{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-block:22px;flex-wrap:wrap}
+footer{padding-top:28px;display:flex;justify-content:flex-end}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- v2: one workspace. Stage left, a rounded panel right, pill controls, gradient-shader primary buttons ---------- */
+@property --spin{syntax:"<angle>";inherits:false;initial-value:0deg}
+:root{--panel:#FBFAF8;--r-lg:28px;--r-md:16px;--r-sm:12px;
+  --grad:conic-gradient(from var(--spin),#ff9a6b,#ff6fb5,#a98bff,#5ec8ff,#6ff0c8,#ffd36b,#ff9a6b)}
+body{background-color:var(--paper);background-image:radial-gradient(rgba(18,18,17,.07) 1px,transparent 1.2px);background-size:20px 20px}
+.wrap{max-width:1320px;min-height:100vh;display:flex;flex-direction:column;box-sizing:border-box}
+header{padding-block:22px 8px}
+/* the workspace sits in the middle of the screen, with real space under the header */
+.ws{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:center;flex:1;padding-block:clamp(28px,6vh,72px)}
+.ws .stage{min-height:clamp(420px,calc(100vh - 230px),680px)}
+body{padding-block:0}
+@media (max-width:980px){.ws{grid-template-columns:minmax(0,1fr)}}
+.left{display:flex;flex-direction:column;gap:14px;min-width:0;position:sticky;top:14px}
+@media (max-width:980px){.left{position:static}}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-md)}
+
+/* stage: soft gradient field with a slow drifting light, like a studio cyc */
+.stage{border-radius:var(--r-lg);min-height:520px;border:1px solid var(--rule);isolation:isolate;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 30px 80px -40px rgba(18,18,17,.25)}
+.stage[data-surface="light"]{background:radial-gradient(120% 90% at 50% 105%,#DEDAD2,#F4F2EE 62%)}
+.stage[data-surface="dark"]{background:radial-gradient(120% 90% at 50% 105%,#050505,#1B1B1D 62%)}
+.stage::before{content:"";position:absolute;inset:-20%;z-index:-1;opacity:.55;filter:blur(60px);
+  background:radial-gradient(30% 30% at 30% 35%,rgba(255,154,107,.35),transparent 70%),radial-gradient(28% 28% at 70% 30%,rgba(169,139,255,.32),transparent 70%),radial-gradient(30% 30% at 55% 75%,rgba(94,200,255,.28),transparent 70%);
+  animation:drift 18s ease-in-out infinite alternate}
+.stage[data-surface="dark"]::before{opacity:.35}
+@keyframes drift{to{transform:translate(4%,-3%) rotate(8deg) scale(1.05)}}
+.stage-tag{top:18px;left:20px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.6);backdrop-filter:blur(8px);border:1px solid rgba(18,18,17,.06)}
+.stage[data-surface="dark"] .stage-tag{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.08);color:#9a9a96}
+.stage-note{position:absolute;top:22px;right:20px;font-size:12.5px;color:#8a897f;z-index:2}
+.cast{inset:56px 48px 84px}
+.slot{border-radius:20px}
+.slot[aria-current="true"]{border-color:rgba(127,127,120,.35);background:rgba(255,255,255,.25)}
+.stage[data-surface="dark"] .slot[aria-current="true"]{background:rgba(255,255,255,.04)}
+.stage-bar{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;z-index:3;padding:0 12px}
+
+/* pills */
+.opts.pills{display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid var(--rule);backdrop-filter:blur(10px);flex-wrap:wrap;justify-content:center}
+.stage[data-surface="dark"] .opts.pills{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+.opts.pills button{border:0;margin:0;height:30px;padding:0 13px;border-radius:999px;background:transparent;color:var(--muted);font-size:13px}
+.stage[data-surface="dark"] .opts.pills button{color:#a8a8a3}
+.opts.pills button:hover{color:var(--ink)}
+.opts.pills button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.stage[data-surface="dark"] .opts.pills button[aria-pressed="true"]{background:#F2F1EE;color:#121211}
+.under{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.under .grp{display:flex;align-items:center;gap:10px}
+.under .grow{flex:1}
+.sizes.card{padding:16px 18px;border-bottom:1px solid var(--rule)}
+
+/* buttons: pills; the primary ones carry a slowly turning gradient ring and glow */
+.btn{border-radius:999px;height:44px;padding:0 20px}
+.btn.sm{height:34px;padding:0 14px}
+.btn.wide{width:100%}
+.btn svg{width:16px;height:16px}
+.btn.line{background:var(--panel);border-color:var(--rule)}
+.btn.glow{position:relative;border:1.5px solid transparent;color:#fff;isolation:isolate;
+  background:linear-gradient(180deg,#2a2a28,#121211) padding-box,var(--grad) border-box;animation:spin 6s linear infinite}
+.btn.glow::after{content:"";position:absolute;inset:4px -2px -6px;z-index:-1;border-radius:inherit;background:var(--grad);filter:blur(14px);opacity:.45;animation:spin 6s linear infinite;transition:opacity .3s var(--ease)}
+.btn.glow:hover{opacity:1}.btn.glow:hover::after{opacity:.75}
+.btn.glow::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.12;mix-blend-mode:overlay;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>")}
+.btn.glow[disabled]{animation:none;opacity:.4}.btn.glow[disabled]::after{opacity:0}
+.btn.glow .cost{color:rgba(255,255,255,.7)}
+@keyframes spin{to{--spin:360deg}}
+
+/* panel */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);padding:10px;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 30px 80px -40px rgba(18,18,17,.3);display:flex;flex-direction:column;gap:6px;min-width:0}
+.tabs{display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--hover)}
+.tabs button{flex:1;border:0;background:transparent;height:34px;border-radius:999px;font-size:13.5px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(18,18,17,.12)}
+.tabs button[disabled]{opacity:.4;cursor:default}
+.tab{padding:14px 10px 10px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.panel h1{font-size:30px;max-width:none}
+.panel .sub{font-size:15.5px}
+.fld{display:flex;flex-direction:column;gap:8px}
+.fld-h{display:flex;justify-content:space-between;align-items:center}
+.hint-s,.note-s{color:var(--faint);font-size:12.5px}
+.note-s{color:var(--muted);font-size:13.5px}
+textarea{border-radius:var(--r-sm);font-size:15px;min-height:96px;background:#fff}
+.drop{border-radius:var(--r-sm);background:#fff}
+.thumb{border-radius:10px}
+.mats{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.mat{border-radius:var(--r-sm);background:#fff;padding:8px 4px 7px;font-size:12px}
+.mat .sw{width:40px;height:40px}
+.mat[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink),0 6px 16px -8px rgba(18,18,17,.4)}
+.count.pills{display:inline-flex;padding:4px;gap:2px;border-radius:999px;background:var(--hover);border:0;width:max-content}
+.count.pills button{border:0;margin:0;width:40px;height:32px;border-radius:999px;background:transparent}
+.count.pills button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.field{grid-template-columns:72px minmax(0,1fr) 40px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+.msg{border-radius:var(--r-sm);border-left:0;background:var(--hover)}
+.msg.bad{background:color-mix(in srgb,var(--bad) 10%,#fff);color:var(--bad)}
+
+/* linear panel steps */
+.pstep{padding:16px 12px 12px;animation:in .45s var(--ease)}
+.panel h2{font-weight:400;font-size:24px;letter-spacing:-.02em;margin:0}
+.back{align-self:flex-start;font-size:13px;text-decoration:none}
+.back:hover{text-decoration:underline}
+.tsec{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--rule)}
+.tsec.row2{flex-direction:row;flex-wrap:wrap;gap:14px 22px}
+.tsec .grp{display:flex;flex-direction:column;gap:8px}
+.tsec .opts.pills{background:var(--hover);border:0}
+.setcard{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:var(--r-md);border:1px solid var(--rule);background:#fff;text-align:left;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.setcard:hover{transform:translateY(-2px);border-color:var(--faint);box-shadow:0 12px 26px -16px rgba(18,18,17,.45)}
+.setcard .sc-h{display:flex;justify-content:space-between;align-items:baseline}
+.setcard .sc-h b{font-weight:500}.setcard .sc-h small{color:var(--faint);font-size:12px}
+.setcard .sc-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.setcard .sc-row img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:10px;background:radial-gradient(90% 80% at 50% 90%,#ECE9E3,#FAF9F7);padding:6px;box-sizing:border-box}
+/* shape composer: one bordered unit, the text on top and a footer bar holding Regenerate,
+   so the button is attached to the box without ever sitting over the text */
+.composer{border:1px solid var(--rule);border-radius:var(--r-sm);background:#fff;overflow:hidden}
+.composer:focus-within{border-color:var(--ink)}
+.composer textarea{border:0;border-radius:0;background:transparent;min-height:96px;max-height:220px;resize:none;margin:0;width:100%;display:block}
+.composer-bar{display:flex;justify-content:flex-end;padding:8px;border-top:1px solid var(--rule);background:var(--paper-2,#f7f6f3)}
+/* agents grid: every agent you can put on stage, like a sticker sheet */
+.gsec{display:flex;flex-direction:column;gap:8px}
+.gsec-h{display:flex;justify-content:space-between;align-items:baseline}
+.gsec-h small{color:var(--faint);font-size:12px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tileb{position:relative;aspect-ratio:1;border-radius:var(--r-md);border:1px solid var(--rule);background:radial-gradient(90% 80% at 50% 90%,#ECE9E3,#fff);display:grid;place-items:center;padding:10px;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.tileb:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(18,18,17,.45)}
+.tileb[aria-current="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.tileb img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.12))}
+.tileb .st{font:400 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+footer{padding-top:18px}
+@media (max-width:540px){.mats{grid-template-columns:repeat(3,minmax(0,1fr))}.stage{min-height:420px}}
+/* phones and narrow windows: stage, then the panel (where you act), then the controls and size rows */
+@media (max-width:980px){.ws{gap:14px}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="mark"><img src="__LOGO__" alt="LCA"><span>Agent Studio</span></div>
+  <span class="credits"><i id="connDot"></i><span id="connText">Not connected</span></span>
+</header>
+
+<main class="ws">
+  <!-- left: the stage and its state pills, nothing else -->
+  <section class="left">
+    <div class="stage" id="stage" data-surface="light">
+      <span class="stage-tag" id="stageTag">Example</span><span class="stage-note" id="stageNote"></span>
+      <div class="cast" id="cast"></div>
+      <div class="stage-bar"><div class="opts pills" id="states" role="group" aria-label="State"></div></div>
+    </div>
+  </section>
+
+  <!-- right: one panel that moves forward step by step: start → (sets | create) → tune -->
+  <aside class="panel">
+    <div class="pstep" id="p-start">
+      <div class="stack">
+        <h1>Make agents for your app.</h1>
+        <p class="sub">Animated characters for every state your AI goes through. Export them straight into your prototype.</p>
+        <button class="btn glow wide" id="connectBtn">Connect Higgsfield</button>
+        <button class="btn line wide" id="readyBtn">Try a ready-made set</button>
+        <p class="need" id="needLine">Ready-made sets are free. To design your own, you need a <a href="https://higgsfield.ai" target="_blank" rel="noopener">Higgsfield account</a>.</p>
+        <div id="connectMsg"></div>
+      </div>
+    </div>
+
+    <div class="pstep" id="p-sets" hidden>
+      <div class="stack">
+        <button class="link dim back" data-back="start">← Back</button>
+        <h2>Pick a set</h2>
+        <p class="note-s">Three agents each, free to use. You can tune them next.</p>
+        <div class="stack" id="sets"></div>
+      </div>
+    </div>
+
+    <div class="pstep" id="p-create" hidden>
+      <div class="stack">
+        <button class="link dim back" data-back="start">← Back</button>
+        <h2>Describe your agents</h2>
+        <div class="fld"><div class="fld-h"><span class="label dim">Brief</span><button class="link dim" id="randomBtn">Randomize</button></div>
+          <textarea id="prompt" placeholder="Calm helpers for a banking app. Soft blues and sage."></textarea>
+          <span class="hint-s">Bodies only. Arms, legs and faces are left out; eyes are added for you.</span></div>
+        <div class="fld"><span class="label dim">Inspiration <span style="color:var(--faint)">· optional</span></span>
+          <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add inspiration images">
+            <span class="hint">Paste (⌘V), drop or <u>browse</u>. Up to 5 images</span>
+            <input type="file" id="file" accept="image/*" multiple hidden>
+          </div></div>
+        <div class="fld"><span class="label dim">Material</span><div class="mats" id="material"></div></div>
+        <div class="fld"><span class="label dim">Agents</span><div class="count pills" id="count" role="group" aria-label="Number of agents"></div></div>
+        <div id="describeMsg"></div>
+        <button class="btn glow wide" id="genBtn">Generate</button>
+      </div>
+    </div>
+
+    <div class="pstep" id="p-tune" hidden>
+      <div class="stack">
+        <button class="link dim back" id="tuneBack">← Change set</button>
+        <div><h2 id="tuneTitle">Your agents</h2><p class="note-s" id="tuneNote"></p></div>
+        <div id="agentsMsg"></div>
+        <div class="tsec">
+          <div class="label dim" id="detailFor">Agent 1</div>
+          <div class="field"><span>Eye height</span><input type="range" id="eyeY" min="0.2" max="0.85" step="0.005" aria-label="Eye height"><span class="mono" id="eyeYv"></span></div>
+          <div class="field"><span>Spacing</span><input type="range" id="eyeDx" min="0.06" max="0.32" step="0.002" aria-label="Eye spacing"><span class="mono" id="eyeDxv"></span></div>
+          <div class="field"><span>Eye size</span><input type="range" id="eyeS" min="0.5" max="1.8" step="0.01" aria-label="Eye size"><span class="mono" id="eyeSv"></span></div>
+        </div>
+        <div class="tsec" id="ownTools">
+          <span class="label dim">Shape</span>
+          <!-- composer: Regenerate in the box's footer bar. Edited text = new shape; unchanged = a fresh take on the same shape. -->
+          <div class="composer">
+            <textarea id="shapeText" aria-label="Shape description" placeholder="Describe a new shape for this agent"></textarea>
+            <div class="composer-bar"><button class="btn sm glow" id="regenBtn" title="Make a new image from the description above">Regenerate</button></div>
+          </div>
+          <span class="hint-s" id="shapeHint">Edit the description to regenerate with a new shape.</span>
+        </div>
+        <div class="tsec" id="readyNote" hidden>
+          <span class="label dim">Make your own</span>
+          <p class="note-s">To design agents from your own idea or inspiration, connect a Higgsfield account.</p>
+          <button class="btn line sm" id="readyConnectBtn">Connect Higgsfield</button>
+        </div>
+        <div class="tsec row2">
+          <div class="grp"><span class="label dim">Glow</span><div class="opts pills" id="glow"><button data-v="0" aria-pressed="true">Off</button><button data-v="1" aria-pressed="false">On</button><button data-v="1.8" aria-pressed="false">Strong</button></div></div>
+          <div class="grp"><span class="label dim">Surface</span><div class="opts pills" id="surface"><button data-v="light" aria-pressed="true">Light</button><button data-v="dark" aria-pressed="false">Dark</button></div></div>
+        </div>
+        <div class="tsec sizes"><span class="label dim">Small sizes</span><div class="sizerow" id="s48"><span class="label dim">48px</span></div><div class="sizerow" id="s32"><span class="label dim">32px</span></div></div>
+        <button class="btn glow wide" id="exportBtn" disabled><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0L5 7m3 3 3-3M3 12.5h10"/></svg>Export kit</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer hidden id="debugFoot"><button class="link dim" id="logBtn" style="font-size:12px" title="Copies a record of the Higgsfield calls this page made, for troubleshooting">Copy activity log</button></footer>
+</div>
+
+<!-- The agent engine (same code that ships in the export). Plain script so the export can reuse its source. -->
+<script id="rig-src">
+/*__RIG__*/
+</script>
+<script>window.AgentRig = { createAgent, defineAgents, setEffectColors, agentNames };</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(() => {
+"use strict";
+// ---------- constants ----------
+const CL = window.claude && window.claude.use ? window.claude : { use: async () => null };   // outside claude.ai every capability is absent
+const HF = "__HF_SERVER__";                       // the viewer's Higgsfield connector name, set when the skill publishes this page
+const CUTOUT_B64 = "__CUTOUT_B64__";              // scripts/cutout.py, run inside the viewer's Higgsfield sandbox
+const EXAMPLES = __EXAMPLES__;                    // three glass example agents for the opening screen
+const IMAGE_MODEL = { model: "gpt_image_2_5", quality: "high", resolution: "1k", aspect_ratio: "1:1" };
+const STATES = [["idle", "Idle"], ["thinking", "Thinking"], ["working", "Working"], ["waiting", "Waiting"], ["blocked", "Blocked"], ["done", "Done"]];
+const STEPS = [["connect", "Connect"], ["describe", "Describe"], ["agents", "Agents"]];
+const BODY_MATERIALS = {
+  glass: ["Glass", "Made of solid glass that is lightly frosted on the inside, mostly translucent with a soft milky haze within the glass, while the outer surface is perfectly smooth, polished and high-gloss like wet glass. Strong shine: crisp bright specular highlights on the upper left, a clean curved window reflection, sharp glints, and a bright thin rim of light along the edge", "glass", "Flat pure black background", "radial-gradient(circle at 34% 28%,#fff 0 9%,transparent 11%),linear-gradient(160deg,#d9d2ff,#8fb0ff 55%,#9ef0dd)"],
+  frosted: ["Frosted", "Made entirely of solid frosted glass all the way through, like sandblasted or acid-etched glass, with a soft satin finish and very fine micro-grain texture. Light diffuses softly through it. Soft broad satin sheen and gentle highlights on the upper left, a faint soft rim along the edge", "glass", "Flat pure black background", "radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),transparent 45%),linear-gradient(160deg,#e9ecf2,#b9c6da)"],
+  jelly: ["Jelly", "Made of soft wobbly translucent jelly, glossy and wet-looking, light glowing through it with a slightly denser colour toward the middle, crisp specular highlights on the upper left", "glass", "Flat pure black background", "radial-gradient(circle at 34% 28%,#fff 0 9%,transparent 11%),radial-gradient(circle at 50% 60%,#ff7aa8,#ffb3cc 70%)"],
+  clay: ["Clay", "Made of smooth matte clay with a soft satin finish, gentle even studio lighting, subtle soft shading", "solid", "Transparent background, the body isolated with nothing behind it", "radial-gradient(circle at 35% 30%,#f6c9a8,#e39a6c 75%)"],
+  plush: ["Plush", "Made of soft short-pile plush fabric like a premium designer toy, fine fuzzy texture catching the light, gentle soft studio lighting, subtle seams only where the shape needs them", "solid", "Transparent background, the body isolated with nothing behind it", "radial-gradient(circle at 40% 35%,#d8e9b8,#9cc27a 80%)"],
+  ceramic: ["Ceramic", "Made of glazed ceramic with a smooth glossy glaze, soft reflections and a clean bright highlight on the upper left, slightly pooled glaze toward the bottom", "solid", "Transparent background, the body isolated with nothing behind it", "radial-gradient(circle at 33% 27%,#fff 0 8%,transparent 10%),linear-gradient(170deg,#9fd4e0,#2f7f99)"],
+  flat: ["Flat", "A flat vector illustration with clean solid colour fills and one soft highlight, no gradients, no outlines", "solid", "Transparent background, the body isolated with nothing behind it", "#FF9F0A"],
+};
+const SWATCHES = __SWATCHES__;   // real material samples generated on Higgsfield, one per tile
+const MATCH = "Match the reference image exactly in material, surface finish, lighting, colours and rendering style; only the shape is different: ";
+// When each agent has its own colours, the reference image must not drag them back to agent 1's palette
+const MATCH_OWN = "Match the reference image exactly in material, surface finish, lighting and rendering style, but NOT its colours: use only the colours described below. The shape and colours are different: ";
+
+// ---------- state ----------
+const S = { mcp: null, sample: null, downloads: null, connected: false, credits: null, imageCost: 1.5,
+  step: "connect", inspo: [], count: 3, material: "auto", plan: null, agents: [], selected: 0, state: "idle", surface: "light", glow: 0, busy: false };
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const k in attrs) { const v = attrs[k]; if (k === "class") n.className = v; else if (k.startsWith("on")) n[k] = v; else if (v !== false && v != null) n.setAttribute(k, v); } for (const c of kids) if (c != null) n.append(c); return n; };
+const slug = (s) => (s || "agents").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "agents";
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 });
+const notice = (host, text, kind = "") => host.replaceChildren(text ? el("div", { class: "msg " + kind }, text) : "");
+const cost = (n) => `${fmt(S.imageCost * n)} credits`;
+
+// ---------- connector plumbing ----------
+const ERR_COPY = {
+  server_not_connected: "Higgsfield isn't connected to your Claude account. Add it in claude.ai under Settings → Connectors, then reload.",
+  needs_reauth: "Your Higgsfield connection expired. Reconnect it in claude.ai under Settings → Connectors.",
+  selection_required: "You have more than one Higgsfield connector. Pick one in the prompt claude.ai shows, then try again.",
+  not_in_manifest: "This page isn't allowed to use Higgsfield yet. Allow it from the page's Permissions menu, then try again.",
+  approval_required: "Higgsfield needs your approval for this page. Click again and choose Allow.",
+  blocked_by_policy: "Your organisation's settings block this Higgsfield action.",
+  server_unavailable: "Higgsfield didn't answer in time. Try again in a moment.",
+  not_granted: "Open this page on claude.ai to connect Higgsfield.",
+  capability_disabled: "Open this page on claude.ai to connect Higgsfield.",
+  rate_limited: "Too many requests at once. Wait a few seconds, then try again.",
+  consent_required: "This page needs your permission to use Higgsfield. Click again and choose Allow.",
+};
+const errText = (e) => ERR_COPY[e?.code] || (e?.code === "tool_error" ? `Higgsfield said: ${String(e.message || "").slice(0, 240)}` : (e?.message || String(e)));
+const LOG = [];
+const shape = (v, d = 0) => v == null || typeof v !== "object" ? (typeof v === "string" && v.length > 80 ? v.slice(0, 80) + "…" : v) : d > 3 ? "{…}" : Array.isArray(v) ? [v.length, shape(v[0], d + 1)] : Object.fromEntries(Object.entries(v).slice(0, 14).map(([k, x]) => [k, shape(x, d + 1)]));
+async function hf(tool, input) {
+  if (!S.mcp) throw { code: "not_granted" };
+  const t = Date.now(), entry = { tool, at: new Date(t).toISOString().slice(11, 19) };
+  try { const r = await S.mcp.callTool(HF, tool, input, { cache: false }); entry.ms = Date.now() - t; entry.payload = shape(r?.payload); entry.blocks = (r?.content || []).map((c) => c.type); LOG.push(entry); return r; }
+  catch (e) { entry.ms = Date.now() - t; entry.error = { code: e?.code, message: String(e?.message || "").slice(0, 300) }; LOG.push(entry); throw e; }
+}
+const payload = (r) => (r && r.payload !== undefined ? r.payload : r);
+function dig(o, pred, out = []) { if (!o || typeof o !== "object") return out; for (const [k, v] of Object.entries(o)) { if (pred(k, v)) out.push(v); if (v && typeof v === "object") dig(v, pred, out); } return out; }
+function bestUrl(o) { const urls = dig(o, (k, v) => typeof v === "string" && /^https:\/\//.test(v)).filter((u) => /\.(png|jpe?g|webp)(\?|$)/i.test(u)); return urls.find((u) => !/_min\./.test(u)) || urls[0] || null; }
+async function sandbox(command, extra = {}) {
+  const r = await hf("sandbox_exec", { command, timeout_seconds: 120, ...extra });
+  const p = payload(r), out = typeof p === "object" && p ? p : {};
+  const text = (r.content || []).filter((c) => c.type === "text").map((c) => c.text).join("\n");
+  let exit = out.exit_code, stdout = out.stdout, stderr = out.stderr;
+  if (exit === undefined) { try { const j = JSON.parse(text); exit = j.exit_code; stdout = j.stdout; stderr = j.stderr; } catch { stdout = text; } }
+  return { exit, stdout: stdout || "", stderr: stderr || "", images: (r.content || []).filter((c) => c.type === "image") };
+}
+// The script's file name carries its version, so an older copy left in someone's sandbox is never reused.
+const CUTOUT = "cutout___CUTOUT_VER__.py";
+const SETUP = () => `mkdir -p ~/agent-studio && cd ~/agent-studio && (test -f ${CUTOUT} || echo '${CUTOUT_B64}' | base64 -d > ${CUTOUT})`;
+async function pullFile(path) {
+  const size = await sandbox(`${SETUP()} && base64 -w0 '${path}' | wc -c`);
+  const n = parseInt(size.stdout.trim(), 10); if (!n) throw new Error("File not found: " + path);
+  const CH = 350000; let b64 = "";
+  for (let i = 0; i < n; i += CH) b64 += (await sandbox(`cd ~/agent-studio && base64 -w0 '${path}' | cut -c ${i + 1}-${Math.min(n, i + CH)}`)).stdout.trim();
+  const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u;
+}
+const b64url = (u) => { let s = ""; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode(...u.subarray(i, i + 8192)); return "data:image/png;base64," + btoa(s); };
+
+// ---------- steps ----------
+function go(step) {   // kept for older call sites: connect → create form, agents → tune
+  S.step = step;
+  showPanel(step === "agents" ? "tune" : S.connected ? "create" : "start");
+  refreshStage();
+}
+// One panel, one step at a time: start → sets (ready-made) or create (Higgsfield) → tune
+function showPanel(p) {
+  S.panel = p;
+  for (const k of ["start", "sets", "create", "tune"]) $("p-" + k).hidden = k !== p;
+  if (p === "start") renderStart();
+  if (p === "create") renderDescribe();
+  if (p === "sets") renderSets();
+  if (p === "tune") renderDetail();
+  if (matchMedia("(max-width:980px)").matches) $("p-" + p).scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function refreshStage() {
+  if (S.agents.length) { if (heroLive.length) S.state = "idle"; stopHero(); castSig = ""; renderAgents(); }   // your agents start at rest, not mid example cycle
+  else { clearLive(live); clearLive(small); castSig = ""; renderHero(); }
+}
+function canGo(k) { return k === "connect" || (k === "describe" && S.connected) || (k === "agents" && S.agents.length > 0); }
+
+// ---------- ready-made sets (no account needed) ----------
+const READY = __READY_SETS__;   // { key: { title, material, items: [{ id, role, body, bottom, eyeY }] } }
+async function loadReady(key) {
+  const set = READY[key]; if (!set) return;
+  S.ready = key; S.plan = { title: set.title, material: set.material };
+  S.agents = await Promise.all(set.items.map(async (it, i) => { const face = await autoFace(it.body); face.yRel = it.eyeY ?? face.yRel;
+    return { id: it.id, label: "Agent " + (i + 1), role: it.role, shape: "", status: "ready", body: it.body, bottom: it.bottom, face }; }));
+  S.selected = 0; S.step = "agents"; refreshStage(); showPanel("tune");
+}
+// Step "sets": three cards, one per ready-made set. Picking one puts it on the stage and moves on to Tune.
+function renderSets() {
+  $("sets").replaceChildren(...Object.entries(READY).map(([k, set]) => el("button", { class: "setcard", onclick: () => loadReady(k) },
+    el("div", { class: "sc-h" }, el("b", {}, set.title), el("small", {}, set.material[0].toUpperCase() + set.material.slice(1))),
+    el("div", { class: "sc-row" }, ...set.items.map((it) => el("img", { src: it.body, alt: it.role || "" }))))));
+}
+// ---------- 1 · connect ----------
+// Once Higgsfield is connected, the start button just carries on to the brief
+function renderStart() {
+  if ($("connectBtn").disabled) return;   // mid-connect: leave the progress copy alone
+  $("connectBtn").textContent = S.connected ? "Continue" : "Connect Higgsfield";
+  $("needLine").hidden = S.connected;
+}
+function setConn(kind, text) { $("connDot").className = kind; $("connText").textContent = text; }
+async function connect() {
+  if (S.connected) return showPanel("create");
+  const btn = $("connectBtn"); btn.disabled = true; notice($("connectMsg"), "");
+  const lines = ["Hooking up now…", "This'll take a moment…", "A few more seconds…", "Almost there…"]; let li = 0;
+  btn.textContent = lines[0]; const tick = setInterval(() => { li = Math.min(li + 1, lines.length - 1); btn.textContent = lines[li]; }, 2600);
+  const done = () => { clearInterval(tick); btn.disabled = false; renderStart(); };
+  S.mcp = S.mcp || (await CL.use("mcp"));
+  if (!S.mcp) { done(); setConn("bad", "Unavailable here"); notice($("connectMsg"), ERR_COPY.not_granted, "bad"); return; }
+  try {
+    const b = payload(await hf("balance", {}));
+    S.credits = Number(b?.credits ?? dig(b, (k) => /credit/i.test(k))[0]);
+    S.connected = true; setConn("ok", isFinite(S.credits) ? `${fmt(S.credits)} credits` : "Connected");
+    done(); showPanel("create");
+    // price check in the background: the page already assumes 1.5 credits per image, so nothing waits on this
+    hf("generate_image", { params: { ...IMAGE_MODEL, prompt: "price check", get_cost: true }, context: "Price check for agent mascot bodies." })
+      .then((r) => { const c = payload(r); const v = Number(c?.cost?.credits ?? dig(c, (k) => k === "credits")[0]); if (v > 0 && v !== S.imageCost) { S.imageCost = v; if (S.step === "describe") renderDescribe(); } }).catch(() => {});
+  } catch (e) { done(); setConn("bad", "Not connected"); notice($("connectMsg"), errText(e), "bad"); }
+}
+async function refreshCredits() { try { const b = payload(await hf("balance", {})); S.credits = Number(b?.credits); if (isFinite(S.credits)) setConn("ok", `${fmt(S.credits)} credits`); } catch {} }
+
+// ---------- 2 · describe ----------
+function renderDescribe() {
+  $("count").replaceChildren(...[1, 2, 3, 4, 5].map((n) => el("button", { "aria-pressed": String(n === S.count), onclick: () => { S.count = n; renderDescribe(); } }, String(n))));
+  $("material").replaceChildren(...[["auto", "Auto", "conic-gradient(from 200deg,#ffb3cc,#8fb0ff,#9ef0dd,#f6c9a8,#ffb3cc)"], ...Object.entries(BODY_MATERIALS).map(([k, v]) => [k, v[0], v[4]])]
+    .map(([k, l]) => el("button", { class: "mat", "aria-pressed": String(k === S.material), onclick: () => { S.material = k; renderDescribe(); } }, el("img", { class: "sw", src: SWATCHES[k], alt: "" }), l)));
+  const g = $("genBtn"); g.disabled = S.busy;
+  g.replaceChildren(S.busy ? "Working…" : `Generate ${S.count} agent${S.count > 1 ? "s" : ""}`, S.busy ? "" : el("span", { class: "cost" }, cost(S.count)));
+  renderInspo();
+}
+function renderInspo() {
+  const d = $("drop"); d.querySelectorAll(".thumb").forEach((t) => t.remove());
+  S.inspo.forEach((im, i) => d.insertBefore(el("div", { class: "thumb" }, el("img", { src: im.url, alt: "Inspiration " + (i + 1) }), el("button", { "aria-label": "Remove image", onclick: (e) => { e.stopPropagation(); S.inspo.splice(i, 1); renderInspo(); } }, "×")), d.querySelector(".hint")));
+  d.querySelector(".hint").innerHTML = S.inspo.length >= MAX_INSPO ? `${MAX_INSPO} of ${MAX_INSPO} added` : S.inspo.length ? `${S.inspo.length} of ${MAX_INSPO}. Paste, drop or <u>browse</u> for more` : `Paste (⌘V), drop or <u>browse</u>. Up to ${MAX_INSPO} images`;
+}
+const MAX_INSPO = 5;
+async function addFiles(files) {
+  const room = MAX_INSPO - S.inspo.length;
+  if (files.filter((f) => f.type.startsWith("image/")).length > room) notice($("describeMsg"), `Up to ${MAX_INSPO} inspiration images. The first ${Math.max(room, 0)} were added.`);
+  for (const f of files) {
+    if (!f.type.startsWith("image/") || S.inspo.length >= MAX_INSPO) continue;
+    const bmp = await createImageBitmap(f); const k = Math.min(1, 768 / Math.max(bmp.width, bmp.height));
+    const c = Object.assign(document.createElement("canvas"), { width: Math.round(bmp.width * k), height: Math.round(bmp.height * k) });
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.86));
+    S.inspo.push({ blob, url: URL.createObjectURL(blob) });
+  }
+  renderInspo();
+}
+const RANDOM_SEEDS = ["weather", "kitchen tools", "minerals", "sea creatures", "stationery", "pastry", "houseplants", "planets", "sweets", "garden", "instruments", "fruit", "winter", "deep sea", "bakery", "tea", "night sky", "ceramics studio", "toy shop", "botanical", "candles", "desert", "arcade", "origami"];
+async function randomize() {
+  const seed = RANDOM_SEEDS[Math.floor(Math.random() * RANDOM_SEEDS.length)];
+  const keys = Object.keys(BODY_MATERIALS), mat = keys[Math.floor(Math.random() * keys.length)];
+  S.material = mat; S.count = 1 + Math.floor(Math.random() * 5);
+  const b = $("randomBtn"); b.disabled = true; b.textContent = "Rolling…";
+  S.sample = S.sample || (await CL.use("sample"));
+  try {
+    if (!S.sample) throw 0;
+    const r = await S.sample(`Write one short, vivid brief (max 25 words) for a cast of faceless mascot characters for AI agents, loosely inspired by "${seed}", made of ${BODY_MATERIALS[mat][0].toLowerCase()}. Name a palette of three colours. Plain text only, no quotes.`, { modelTier: "quick", cache: false });
+    $("prompt").value = r.text.trim();
+  } catch { $("prompt").value = `Friendly ${BODY_MATERIALS[mat][0].toLowerCase()} agents inspired by ${seed}, in a calm three-colour palette.`; }
+  b.disabled = false; b.textContent = "Randomize"; renderDescribe();
+}
+
+const PLAN_RULES = `You are designing a cast of mascot characters for AI agents. Each agent is a simple, soft 3D body with NO face (eyes are added later in code), shown alone, front view.
+Return JSON only, with this shape:
+{"title": short name for the set, "material": one of ["glass","frosted","jelly","clay","plush","ceramic","flat"],
+ "colors": "one sentence describing a soft vertical colour gradient inside the bodies, top to bottom, 3 colours",
+ "agents": [{"role": what this agent does in four words or fewer, "shape": a plain description of the body's silhouette and any surface details, "colors": optional, see below}]}
+Colour: by default the whole set shares the one "colors" gradient. If the brief asks for each agent to have its own colour or gradient (or lists several palettes), give every agent its own "colors" sentence in the same form (a soft vertical gradient, top to bottom), clearly different from the others, and set the top-level "colors" to the first agent's. Otherwise leave out the per-agent "colors".
+Rules: exactly COUNT agents. The first agent is the simplest, most balanced shape (it is generated first and becomes the style reference).
+Every agent has a clearly different silhouette that still reads at 32px (sphere, rounded triangle pointing up, soft flame with three plump round tips, rounded cube seen from the front, one big dome with two small round bumps and a flat bottom, wide squat bean, leaning teardrop, puffy five-point star, soft heart...).
+Keep every body chunky and squat: about as wide as it is tall, never more than 1.2 times taller than wide. No tall, narrow or elongated bodies: no upright pills, capsules, rods, columns, bullets or domes on a stem.
+Theme details live only in the body's shape and surface (ribs, a short stem, a swirl inside the glass, a texture). Never a face, eyes, mouth, limbs, props, clothing, accessories or text.
+Bodies only: if the brief asks for arms, legs, hands, a face or clothing, leave them out and keep the idea in the body's shape, colour and surface. The body rests directly on its own bottom: no legs, feet, stubs or stands. Keep it polished and premium, never childish or cartoony unless the brief asks for it.
+Describe shapes by geometry rather than by naming objects when an object name might add a face or props.`;
+
+async function generateAll() {
+  if (S.busy) return;
+  const text = $("prompt").value.trim();
+  if (!text && !S.inspo.length) { $("prompt").focus(); return notice($("describeMsg"), "Describe your agents or add an image first."); }
+  // Lock before the first await: claude.use() can sit on a permission prompt, and a second click must not start a second run
+  S.busy = true; S.ready = null; notice($("describeMsg"), ""); renderDescribe(); $("genBtn").replaceChildren("Designing…");
+  S.sample = S.sample || (await CL.use("sample"));
+  if (!S.sample) { S.busy = false; renderDescribe(); return notice($("describeMsg"), "Open this page on claude.ai to generate.", "bad"); }
+  try {
+    const lim = await S.sample.limits?.().catch(() => null);
+    const canImg = !!lim?.images && S.inspo.length > 0;
+    const input = PLAN_RULES.replace("COUNT", S.count) + `\n\nBrief from the user: ${text || "(none, use the images)"}` +
+      (S.material !== "auto" ? `\nThe material must be "${S.material}".` : "") +
+      (canImg ? `\nThe attached images are the user's inspiration. Take the palette and mood from them; take subject motifs only where they can live in a body's shape or surface. If they show other characters, borrow proportions, not faces.` : "");
+    const plan = await S.sample.json(input, { modelTier: "default", cache: false, ...(canImg ? { images: S.inspo.slice(0, lim.images.maxCount || 4).map((i) => i.blob) } : {}) });
+    if (!plan || !Array.isArray(plan.agents) || !plan.agents.length) throw new Error("Claude returned an empty plan. Try again.");
+    if (S.material !== "auto") plan.material = S.material;
+    if (!BODY_MATERIALS[plan.material]) plan.material = "glass";
+    S.plan = plan; clearLive(live); clearLive(small);
+    S.agents = plan.agents.slice(0, S.count).map((a, i) => ({ id: "agent-" + (i + 1), label: "Agent " + (i + 1), role: a.role, shape: a.shape, colors: typeof a.colors === "string" && a.colors.trim() ? a.colors.trim() : null, status: "queued" }));
+    S.agents.forEach((a, i) => (a.prompt = buildPrompt(a, i)));
+    S.selected = 0; go("agents");
+    await runCast();
+  } catch (e) { notice(S.agents.length ? $("agentsMsg") : $("describeMsg"), e?.code === "not_granted" ? "Claude needs your permission for this page. Click again and choose Allow." : errText(e), "bad"); }
+  S.busy = false; renderDescribe(); if (S.agents.length) renderAgents(); refreshCredits();
+}
+function buildPrompt(a, i) {
+  const [, msent, , bg] = BODY_MATERIALS[S.plan.material];
+  const body = `A minimalist mascot character body shaped like ${a.shape}, resting directly on its own bottom, completely blank with no eyes, no mouth, no face, no arms, no legs, no feet, no limbs, no markings, no accessories. Strict front view, straight head-on, centered, symmetrical. ${msent}. ${String(a.colors || S.plan.colors || "").trim().replace(/[.\s]+$/, "")}. No outer glow, no bloom, no halo, no light spilling onto the background, crisp clean silhouette. No shadow, no floor, no reflection beneath. ${bg}. Premium designer toy aesthetic, calm and refined. Octane render quality, high resolution, noise-free.`;
+  return i === 0 ? body : (a.colors ? MATCH_OWN : MATCH) + body;
+}
+async function runCast() {
+  const hero = S.agents[0];
+  if (hero.status !== "ready") await runJobs([hero]);
+  if (hero.status !== "ready") { S.agents.slice(1).forEach((a) => { if (a.status !== "ready") { a.status = "error"; a.error = "Needs Agent 1 first"; } }); renderAgents(); return; }
+  const rest = S.agents.slice(1).filter((a) => a.status !== "ready");
+  if (rest.length) await runJobs(rest);
+}
+async function runJobs(list) {
+  const hero = S.agents[0];
+  list.forEach((a) => { a.status = "queued"; a.error = null; }); renderAgents();
+  const transparent = BODY_MATERIALS[S.plan.material][2] === "solid";   // solid bodies come back pre-isolated, so the cutout never keys by colour
+  const reqs = list.map((a, i) => ({ index: i, params: { ...IMAGE_MODEL, ...(transparent ? { background: "transparent" } : {}), prompt: a.prompt, count: 1, ...(a !== hero && hero.jobId ? { medias: [{ value: hero.jobId, role: "image_references" }] } : {}) } }));
+  let jobs = [];
+  try { const sub = payload(await hf("generate_image_batch", { requests: reqs, context: "Generating faceless mascot bodies for animated AI agents." }));
+    jobs = Array.isArray(sub?.jobs) ? sub.jobs : dig(sub, (k, v) => k === "jobs" && Array.isArray(v))[0] || []; }
+  catch (e) { list.forEach((a) => { a.status = "error"; a.error = errText(e); }); renderAgents(); return; }
+  list.forEach((a, i) => { const j = jobs.find((x) => x.index === i) || jobs[i]; a.jobId = j?.job_id || j?.id || null; a.status = a.jobId ? "generating" : "error"; if (!a.jobId) a.error = (j?.error && String(j.error)) || "Didn't start"; });
+  renderAgents();
+  const live = list.filter((a) => a.jobId);
+  for (let tries = 0; tries < 60 && live.some((a) => a.status === "generating"); tries++) {
+    const waitList = live.map((a, i) => ({ a, index: i })).filter((x) => x.a.status === "generating");
+    let w; try { w = payload(await hf("jobs_wait", { jobs: waitList.map((x) => ({ index: x.index, job_id: x.a.jobId })), timeout_seconds: 15 })); } catch (e) { if (e?.retryable) { await sleep(3000); continue; } throw e; }
+    const rows = Array.isArray(w?.jobs) ? w.jobs : dig(w, (k, v) => Array.isArray(v) && v.some((x) => x && (x.job_id || x.status)))[0] || [];
+    const finished = [];
+    for (const { a, index } of waitList) {
+      const row = rows.find((r) => r.job_id === a.jobId || r.id === a.jobId) || rows.find((r) => r.index === index); if (!row) continue;
+      const st = String(row.status || "").toLowerCase();
+      if (/complete|success|done|finished/.test(st)) { a.url = bestUrl(row); a.status = a.url ? "processing" : "error"; if (!a.url) a.error = "No image came back"; else finished.push(a); }
+      else if (/fail|error|cancel|nsfw|reject/.test(st)) { a.status = "error"; a.error = row.error || row.reason || "Couldn't make this one"; }
+    }
+    renderAgents();
+    for (const a of finished) { try { await processAgent(a); } catch (e) { a.status = "error"; a.error = errText(e); a.cutFailed = true; } renderAgents(); }
+  }
+  live.filter((a) => a.status === "generating").forEach((a) => { a.status = "error"; a.error = "Took too long"; });
+  renderAgents();
+}
+async function processAgent(a) {
+  const mode = BODY_MATERIALS[S.plan.material][2];
+  const cmd = `${SETUP()} && rm -rf r/${a.id} && mkdir -p r/${a.id} b && curl -sfL -o r/${a.id}/${a.id}.png '${a.url}' && python3 ${CUTOUT} --in r/${a.id} --out b --mode ${mode} > /dev/null && python3 -c "import json;print(json.dumps(json.load(open('agents.json'))['agents']['${a.id}']))"`;
+  const r = await sandbox(cmd, { image_paths: [`agent-studio/b/${a.id}@512.png`] });
+  if (r.exit !== 0 && r.exit !== undefined) throw new Error("Couldn't cut out the background.");
+  const im = r.images[0];
+  a.body = im ? `data:${im.mimeType};base64,${im.data}` : b64url(await pullFile(`b/${a.id}@512.png`));
+  let cfg = {}; try { cfg = JSON.parse(r.stdout.trim().split("\n").pop()); } catch {}
+  a.bottom = cfg.bottom ?? 0.95; a.face = await autoFace(a.body); a.status = "ready";
+}
+async function regen(i, newShape) {
+  if (S.busy) return; S.busy = true; notice($("agentsMsg"), "");
+  const a = S.agents[i];
+  // The image rendered but the cutout failed: redo only the cutout. Costs nothing.
+  if (!newShape && a.cutFailed && a.url) {
+    a.status = "processing"; a.error = null; renderAgents();
+    try { await processAgent(a); a.cutFailed = false; } catch (e) { a.status = "error"; a.error = errText(e); }
+    S.busy = false; renderAgents(); return;
+  }
+  if (newShape) { a.shape = newShape; a.prompt = buildPrompt(a, i); }
+  a.body = null; a.cutFailed = false; a.url = null; renderAgents();
+  try { if (i > 0 && S.agents[0].status !== "ready") await runJobs([S.agents[0]]); await runJobs([a]); }
+  catch (e) { a.status = "error"; a.error = errText(e); }
+  if (i === 0 && a.status === "ready" && S.agents.length > 1) notice($("agentsMsg"), "Agent 1 sets the style. Regenerate the others if you want them to match it.");
+  S.busy = false; renderAgents(); refreshCredits();
+}
+
+// ---------- 3 · agents (live) ----------
+const live = [], small = [], heroLive = [];
+function clearLive(arr) { while (arr.length) arr.pop().destroy(); }
+async function autoFace(src) {
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+  const N = 128, c = Object.assign(document.createElement("canvas"), { width: N, height: N }), x = c.getContext("2d", { willReadFrequently: true });
+  x.drawImage(img, 0, 0, N, N); const d = x.getImageData(0, 0, N, N).data;
+  let x0 = N, y0 = N, x1 = 0, y1 = 0, r = 0, g = 0, b = 0, n = 0;
+  for (let y = 0; y < N; y++) for (let X = 0; X < N; X++) { const k = (y * N + X) * 4; if (d[k + 3] > 60) { x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, y); y1 = Math.max(y1, y); if (d[k + 3] > 200) { r += d[k]; g += d[k + 1]; b += d[k + 2]; n++; } } }
+  return { cx: (x0 + x1 + 1) / 2 / N, top: y0 / N, bw: (x1 - x0 + 1) / N, bh: (y1 - y0 + 1) / N, yRel: 0.58, dxRel: 0.19, sRel: 1, rgb: n ? [r / n, g / n, b / n].map(Math.round).join(",") : "120,170,255" };
+}
+function faceCfg(a) {
+  const f = a.face; if (!f) return {};
+  return { face: [f.cx, f.top + f.yRel * f.bh], dx: f.dxRel * f.bw, w: 0.105 * f.bw * f.sRel, h: Math.min(0.156 * f.bw, 0.2 * f.bh) * f.sRel, bottom: a.bottom ?? 0.95, scale: 1 };
+}
+function sizeFor(host, n, max) {
+  const W = (host.clientWidth || 700) - 8, Hh = host.clientHeight || 360, gap = Math.min(40, Math.max(8, W * 0.025));
+  const fit = (k) => Math.floor((W - gap * (k - 1)) / k) - 16;
+  let perRow = n; if (fit(perRow) < 96 && n > 2) perRow = Math.ceil(n / 2);
+  const rows = Math.ceil(n / perRow);
+  host.style.flexWrap = rows > 1 ? "wrap" : "nowrap"; host.style.alignContent = "center"; host.style.gap = `${rows > 1 ? 8 : 0}px ${gap}px`;
+  return Math.max(56, Math.min(n <= 2 ? 230 : max, fit(perRow), Math.floor((Hh - rows * 30) / rows)));
+}
+function mountOne(host, a, size, store, opts = {}) {
+  const ag = AgentRig.createAgent(host, a.id, a.body, { size, state: S.state, interactive: opts.interactive !== false, glow: S.glow });
+  if (a.face?.rgb) ag.setTint({ aura: a.face.rgb, aura2: a.face.rgb });
+  store.push(ag); return ag;
+}
+let castSig = "";
+const sigOf = () => S.agents.map((a) => `${a.id}:${a.status}:${a.body ? a.body.length : 0}:${a.error || ""}`).join("|") + "|" + S.surface;
+function select(i) {
+  S.selected = i;
+  $("cast").querySelectorAll(".slot").forEach((sl, j) => sl.setAttribute("aria-current", String(j === i)));
+  renderDetail();
+}
+function selectAndTune(i) { select(i); if (S.panel !== "tune") showPanel("tune"); }
+function remountOne(i) {   // re-create a single agent (after eye tuning) and leave the rest animating
+  const a = S.agents[i]; if (a.status !== "ready") return;
+  AgentRig.defineAgents({ [a.id]: faceCfg(a) });
+  for (const store of [live, small]) for (let k = store.length - 1; k >= 0; k--) if (store[k].name === a.id) {
+    const old = store[k], host = old.host, size = old.size, inter = old.interactive; old.destroy(); host.replaceChildren();
+    const ag = AgentRig.createAgent(host, a.id, a.body, { size, state: S.state, interactive: inter, glow: S.glow });
+    if (a.face?.rgb) ag.setTint({ aura: a.face.rgb, aura2: a.face.rgb }); store[k] = ag; }
+}
+function renderAgents() {
+  if (!S.agents.length) return;
+  const sig = sigOf();
+  if (sig === castSig && live.length) { renderDetail(); return; }   // nothing on stage changed: keep every animation running
+  castSig = sig;
+  const n = S.agents.length, ready = S.agents.filter((a) => a.status === "ready").length, working = S.agents.some((a) => ["queued", "generating", "processing"].includes(a.status));
+  const stage = $("stage"); stage.dataset.surface = S.surface;
+  const cast = $("cast"); clearLive(live); cast.replaceChildren();
+  const size = sizeFor(cast, n, 200);
+  const defs = {}; S.agents.forEach((a) => a.face && (defs[a.id] = faceCfg(a))); AgentRig.defineAgents(defs);
+  S.agents.forEach((a, i) => {
+    const slot = el("div", { class: "slot pick", "aria-current": String(i === S.selected), onclick: () => selectAndTune(i) });
+    if (a.status === "ready" && a.body) { const h = el("div"); slot.append(h); mountOne(h, a, size, live); }
+    else {
+      const busy = ["queued", "generating", "processing"].includes(a.status);
+      slot.append(el("div", { class: "pending", style: `width:${size}px;height:${size}px` }, busy ? el("span", { class: "bar" }, el("i")) : null,
+        busy ? { queued: "Queued", generating: "Rendering", processing: "Finishing" }[a.status] : (a.error || "Didn't render"),
+        // failsafe: a failed render gets its own retry right where it failed
+        !busy ? el("button", { class: "btn sm", style: "margin-top:4px", disabled: S.busy ? "" : false, onclick: (e) => { e.stopPropagation(); S.selected = i; regen(i); } }, "Try again", el("span", { class: "cost" }, a.cutFailed && a.url ? "free" : cost(1))) : null));
+    }
+    slot.append(el("span", { class: "num" }, String(i + 1).padStart(2, "0")));
+    cast.append(slot);
+  });
+  // small sizes
+  clearLive(small);
+  for (const px of [48, 32]) { const row = $("s" + px); row.querySelectorAll("div").forEach((d) => d.remove());
+    S.agents.filter((a) => a.status === "ready").forEach((a) => { const h = el("div"); row.append(h); mountOne(h, a, px, small, { interactive: false }); }); }
+  $("states").replaceChildren(...STATES.map(([v, l]) => el("button", { "aria-pressed": String(S.state === v), onclick: () => { S.state = v; [...live, ...small].forEach((x) => x.setState(v)); $("states").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", String(STATES[j][0] === v))); } }, l)));
+  $("glow").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.v === S.glow)));
+  $("surface").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === S.surface)));
+  renderDetail();
+}
+function renderDetail() {
+  $("cast").querySelectorAll(".pending button").forEach((b) => (b.disabled = S.busy));   // retry buttons follow the busy state without a redraw
+  if (S.agents.some((a) => a.status === "error")) $("debugFoot").hidden = false;   // something failed: offer the activity log
+  const n = S.agents.length, ready = S.agents.filter((a) => a.status === "ready").length, working = S.agents.some((a) => ["queued", "generating", "processing"].includes(a.status));
+  $("stageTag").textContent = working && !ready ? "Generating" : (S.plan?.title || "Your agents");
+  $("stageNote").textContent = working ? `${ready} of ${n} ready · Agent 1 sets the style` : "Click an agent to tune it";
+  $("tuneTitle").textContent = working && !ready ? "Generating…" : (S.plan?.title || "Your agents");
+  $("tuneNote").textContent = working ? `${ready} of ${n} ready. Agent 1 sets the style, the rest follow.` : "Click an agent on the stage to tune its eyes.";
+  $("tuneBack").textContent = S.ready ? "← Change set" : "← New brief";
+  const a = S.agents[S.selected], rdy = a?.status === "ready";
+  $("detailFor").textContent = a ? `${a.label}${a.role ? " · " + a.role : ""}` : "Pick an agent on the stage";
+  ["eyeY", "eyeDx", "eyeS"].forEach((id) => ($(id).disabled = !rdy));
+  if (a?.face) { $("eyeY").value = a.face.yRel; $("eyeDx").value = a.face.dxRel; $("eyeS").value = a.face.sRel;
+    $("eyeYv").textContent = a.face.yRel.toFixed(2); $("eyeDxv").textContent = a.face.dxRel.toFixed(2); $("eyeSv").textContent = a.face.sRel.toFixed(2); }
+  if (document.activeElement !== $("shapeText")) $("shapeText").value = a?.shape || "";
+  syncShape();
+  $("exportBtn").disabled = !ready || working;
+  $("ownTools").hidden = !!S.ready; $("readyNote").hidden = !S.ready;
+
+}
+// Regenerate only means something once the description has changed, so it wakes up when you edit it
+function syncShape() {
+  const ta = $("shapeText"); ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight + 2, 220) + "px"; // grow with the text
+  const a = S.agents[S.selected], edited = !!a && $("shapeText").value.trim() !== "" && $("shapeText").value.trim() !== (a.shape || "").trim();
+  // One button for both: edited text gives a new shape, unchanged text gives a fresh take on the same one.
+  // A render whose cutout failed retries just the cutout, for free.
+  const freeRetry = !edited && a?.status === "error" && a.cutFailed && a.url;
+  $("regenBtn").disabled = S.busy || !a;
+  $("regenBtn").replaceChildren(a?.status === "error" && !edited ? "Try again" : "Regenerate", el("span", { class: "cost" }, freeRetry ? "free" : cost(1)));
+  $("shapeHint").textContent = edited ? "Regenerate makes a new image from your edited description." : "Regenerate as is for a fresh take, or edit the description for a new shape.";
+}
+function tuneEyes() {
+  const a = S.agents[S.selected]; if (!a?.face) return;
+  a.face.yRel = +$("eyeY").value; a.face.dxRel = +$("eyeDx").value; a.face.sRel = +$("eyeS").value;
+  $("eyeYv").textContent = a.face.yRel.toFixed(2); $("eyeDxv").textContent = a.face.dxRel.toFixed(2); $("eyeSv").textContent = a.face.sRel.toFixed(2);
+  clearTimeout(tuneEyes.t); tuneEyes.t = setTimeout(() => remountOne(S.selected), 40);
+}
+
+// ---------- export ----------
+function rigSource() { return $("rig-src").textContent.trim(); }
+async function exportKit() {
+  let ready = S.agents.filter((a) => a.status === "ready"); if (!ready.length) return;
+  S.downloads = S.downloads || (await CL.use("downloads"));
+  if (!S.downloads) return notice($("agentsMsg"), "Downloads aren't available in this view.", "bad");
+  const btn = $("exportBtn"); btn.disabled = true; btn.textContent = "Packing…";
+  try {
+    const zip = new JSZip(), kit = zip.folder("agents"), agentsJson = { agents: {}, glow: S.glow }, bodies = {};
+    // export names carry the kit's name (glass-helpers-1, ...) so two kits on one page never collide
+    const kitSlug = slug(S.plan?.title).replace(/-set$/, "");
+    ready = ready.map((a, i) => ({ ...a, id: `${kitSlug}-${i + 1}` }));
+    for (const a of ready) {
+      agentsJson.agents[a.id] = { role: a.role || "", tint: a.face?.rgb, ...faceCfg(a) }; bodies[a.id] = a.body;
+      kit.file(`bodies/${a.id}@512.png`, a.body.split(",")[1], { base64: true });
+    }
+    const rig = rigSource();
+    kit.file("agents.json", JSON.stringify(agentsJson, null, 2));
+    kit.file("agentRig.js", rig + "\nexport { createAgent, defineAgents, setEffectColors, agentNames };\n");
+    kit.file("Agent.jsx", AGENT_JSX);
+    kit.file("live-agent.js", webComponent(rig, agentsJson, bodies));
+    kit.file("preview.html", previewHtml(ready));
+    kit.file("README.md", readme(ready));
+    const res = await S.downloads.save({ filename: `${slug(S.plan?.title)}-kit.zip`, data: await zip.generateAsync({ type: "blob" }) });
+    notice($("agentsMsg"), res?.status === "saved" ? "Kit saved. Open preview.html inside it to see your agents." : "Kit handed to your device.");
+  } catch (e) { if (e?.code !== "cancelled") notice($("agentsMsg"), e?.code === "unavailable" ? "Downloads aren't available in this view." : "Export failed: " + errText(e), "bad"); }
+  btn.textContent = "Export kit"; btn.disabled = false;
+}
+const AGENT_JSX = `"use client";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { createAgent, defineAgents } from "./agentRig.js";
+import kit from "./agents.json";
+
+defineAgents(kit.agents);
+
+/** <Agent name="agent-1" state="thinking" size={96} />  states: idle, thinking, working, waiting, blocked, done, sleeping */
+export const Agent = forwardRef(function Agent({ name, state = "idle", size = 64, glow = 0, basePath = "/agents", src, interactive = true, ...rest }, ref) {
+  const host = useRef(null), inst = useRef(null);
+  useEffect(() => {
+    const a = createAgent(host.current, name, src || \`\${basePath}/\${name}@512.png\`, { size, interactive, state, glow });
+    const t = kit.agents[name]?.tint; if (t) a.setTint({ aura: t, aura2: t });
+    inst.current = a; return () => { a.destroy(); inst.current = null; };
+  }, [name, size, src, basePath, interactive]);
+  useEffect(() => { inst.current?.setState(state); }, [state]);
+  useEffect(() => { inst.current?.setGlow(glow); }, [glow]);
+  useImperativeHandle(ref, () => ({ bounce: () => inst.current?.bounce() }), []);
+  return <div ref={host} {...rest} />;
+});
+export default Agent;
+`;
+function webComponent(rig, agentsJson, bodies) {
+  return `/* live-agent.js: drop-in animated agents. No build step, no dependencies.
+   <script src="live-agent.js"><\/script>
+   <live-agent name="${Object.keys(agentsJson.agents)[0]}" state="idle" size="96"></live-agent>
+   Attributes: name, state (idle | thinking | working | waiting | blocked | done | sleeping), size (px), glow (0-2). */
+(function () {
+${rig}
+const KIT = ${JSON.stringify(agentsJson)};
+const BODIES = ${JSON.stringify(bodies)};
+defineAgents(KIT.agents);
+// Every kit loaded on the page registers its agents in one shared registry, so a single <live-agent> element
+// serves all of them, whichever kit's script happened to load first.
+const REG = window.LiveAgents = window.LiveAgents || { names: [], kits: {} };
+for (const n in BODIES) { REG.kits[n] = { body: BODIES[n], tint: KIT.agents[n] && KIT.agents[n].tint, create: createAgent }; if (REG.names.indexOf(n) < 0) REG.names.push(n); }
+class LiveAgent extends HTMLElement {
+  static get observedAttributes() { return ["name", "state", "size", "glow"]; }
+  connectedCallback() { this.style.display = this.style.display || "inline-block"; this.mount(); }
+  disconnectedCallback() { if (this.a) { this.a.destroy(); this.a = null; } }
+  attributeChangedCallback(k) { if (!this.isConnected) return; if (k === "state" && this.a) this.a.setState(this.getAttribute("state") || "idle"); else if (k === "glow" && this.a) this.a.setGlow(+this.getAttribute("glow") || 0); else this.mount(); }
+  mount() { this.disconnectedCallback(); const n = this.getAttribute("name"), k = window.LiveAgents.kits[n]; if (!k) return;
+    this.a = k.create(this, n, k.body, { size: +this.getAttribute("size") || 64, state: this.getAttribute("state") || "idle", glow: +this.getAttribute("glow") || 0, interactive: this.getAttribute("interactive") !== "false" });
+    if (k.tint) this.a.setTint({ aura: k.tint, aura2: k.tint }); }
+  bounce() { if (this.a) this.a.bounce(); }
+}
+if (!customElements.get("live-agent")) customElements.define("live-agent", LiveAgent);
+// tags already on the page that were waiting for this kit's agents
+document.querySelectorAll("live-agent").forEach(function (el) { if (!el.a && el.isConnected && el.mount) el.mount(); });
+})();
+`;
+}
+function previewHtml(ready) {
+  const ids = ready.map((a) => a.id);
+  const big = ids.map((id) => `<live-agent name="${id}" size="160"></live-agent>`).join("");
+  const row = (px) => ids.map((id) => `<live-agent name="${id}" size="${px}" interactive="false"></live-agent>`).join("");
+  const opts = (name, items, on) => `<div class="ctrl"><span class="label">${name}</span><div class="opts" data-k="${name.toLowerCase()}">${items.map(([v, l]) => `<button data-v="${v}" aria-pressed="${v === on}">${l}</button>`).join("")}</div></div>`;
+  const title = (S.plan?.title || "Agents").replace(/</g, "");
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono&display=swap">
+<style>:root{--paper:#F2F1EE;--ink:#121211;--muted:#66655F;--rule:#D3D1CB}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Geist,Helvetica,Arial,sans-serif;padding:0 24px 40px}
+.wrap{max-width:1100px;margin:0 auto}header{padding:24px 0 18px;border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;align-items:flex-end}
+h1{font-weight:400;font-size:28px;letter-spacing:-.02em;margin:0}.label{font:11.5px "Geist Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stage{background:#E9E7E2;margin-top:20px;min-height:340px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;padding:40px;transition:background .3s}
+body.dark .stage{background:#161615}
+.ctrls{display:flex;flex-wrap:wrap;gap:0 56px;border-bottom:1px solid var(--rule)}.ctrl{display:flex;flex-direction:column;gap:10px;padding:16px 0}
+.opts{display:flex;flex-wrap:nowrap}.opts button{white-space:nowrap;height:32px;padding:0 12px;border:1px solid var(--rule);background:transparent;margin:0 -1px -1px 0;font:13px Geist,sans-serif;color:var(--muted);cursor:pointer}
+.opts button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);position:relative}
+.sizes{display:flex;flex-direction:column;gap:14px;padding:18px 0;border-bottom:1px solid var(--rule)}.sizes div{display:flex;align-items:flex-end;gap:18px}.sizes .label{width:44px}</style></head>
+<body><div class="wrap"><header><h1>${title}</h1><span class="label">${ids.length} agent${ids.length > 1 ? "s" : ""}</span></header>
+<div class="stage" id="stage">${big}</div>
+<div class="ctrls">${opts("State", STATES, "idle")}${opts("Glow", [["0", "Off"], ["1", "On"], ["1.8", "Strong"]], "0")}${opts("Surface", [["light", "Light"], ["dark", "Dark"]], "light")}</div>
+<div class="sizes"><div><span class="label">48px</span>${row(48)}</div><div><span class="label">32px</span>${row(32)}</div></div></div>
+<script src="live-agent.js"><\/script>
+<script>document.querySelectorAll(".opts").forEach(function(g){g.onclick=function(e){var v=e.target.dataset.v;if(v==null)return;g.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b===e.target)});var k=g.dataset.k;
+if(k==="surface")document.body.classList.toggle("dark",v==="dark");else document.querySelectorAll("live-agent").forEach(function(a){a.setAttribute(k,v)});};});<\/script>
+</body></html>`;
+}
+function readme(ready) {
+  const first = ready[0].id, title = S.plan?.title || "Agents";
+  const list = ready.map((a) => "- \`" + a.id + "\`" + (a.role ? ": " + a.role : "")).join("\n");
+  const names = ready.map((a) => "\`" + a.id + "\`").join(", ");
+  return `# ${title}
+
+Live animated agents for any prototype. Each agent is a PNG body with eyes and motion drawn in code: no video, no
+3D engine, no dependencies.
+
+Agents in this kit:
+${list}
+
+Open \`preview.html\` to see every agent in every state, on light and dark, at full size and at 48px and 32px.
+
+## What's inside
+
+| File | Use it for |
+| --- | --- |
+| \`live-agent.js\` | Everything in one file (engine + bodies). Drop it into any page, prototype or no-code tool. |
+| \`preview.html\` | A ready demo of every state and size. Open it in a browser. |
+| \`Agent.jsx\`, \`agentRig.js\`, \`agents.json\` | React / Next.js component, the engine as a module, and each agent's eye settings. |
+| \`bodies/*.png\` | The cut-out bodies (512px, transparent), for React or your own use. |
+
+## 1. Any page or prototype (fastest)
+
+\`\`\`html
+<script src="live-agent.js"><\/script>
+<live-agent name="${first}" state="idle" size="96"></live-agent>
+\`\`\`
+
+| Attribute | Values |
+| --- | --- |
+| \`name\` | ${names} |
+| \`state\` | \`idle\` (default), \`thinking\`, \`working\`, \`waiting\`, \`blocked\`, \`done\`, \`sleeping\` |
+| \`size\` | pixels, e.g. \`32\`, \`48\`, \`96\`, \`160\` (default 64). Looks crisp up to about 256px. |
+| \`glow\` | \`0\` (off, default) to \`2\`, a soft halo in the agent's own colour |
+| \`interactive\` | \`false\` to stop the eyes following the pointer and click-to-hop |
+
+Drive it from your code:
+
+\`\`\`js
+const agent = document.querySelector("live-agent");
+agent.setAttribute("state", "thinking");   // when your AI starts working
+agent.setAttribute("state", "done");       // when it finishes
+agent.bounce();                            // a one-off happy hop
+\`\`\`
+
+## 2. No-code tools (Framer, Webflow, Squarespace, Notion sites…)
+
+Upload \`live-agent.js\` as an asset (or paste its contents into a custom-code / embed block inside \`<script>…<\/script>\`),
+then use the \`<live-agent>\` tag in an HTML embed. Framer: add it via Site Settings → Custom Code, then an Embed with
+the tag. It is a standard web component, so it also works as-is in Vue, Svelte, Angular and plain HTML.
+
+## 3. React / Next.js
+
+1. Copy \`Agent.jsx\`, \`agentRig.js\` and \`agents.json\` into your app, e.g. \`src/components/agents/\`.
+2. Copy \`bodies/*.png\` into your public folder at \`/agents/\` (or pass \`basePath\`).
+3. Use it:
+
+\`\`\`jsx
+import { Agent } from "./components/agents/Agent.jsx";
+
+<Agent name="${first}" state={isBusy ? "working" : "idle"} size={64} />
+\`\`\`
+
+Props: \`name\`, \`state\`, \`size\`, \`glow\`, \`interactive\`, \`basePath\`, \`src\`. \`ref.current.bounce()\` gives a hop.
+It is marked \`"use client"\` for the Next.js app router. Your bundler needs JSON imports (Vite, Next.js and CRA do).
+
+Prefer the web component in React? Load \`live-agent.js\` once and use \`<live-agent name="${first}" state="idle" />\`.
+In TypeScript, declare the tag once:
+
+\`\`\`ts
+declare namespace JSX { interface IntrinsicElements { "live-agent": any } }
+\`\`\`
+
+## Adjusting
+
+Each agent's eyes live in \`agents.json\`: \`face\` is the centre point between the eyes and \`dx\` half the gap between
+them (both as fractions of the body image), \`w\` and \`h\` the eye size, \`bottom\` where the body meets the ground.
+Change a number, reload. Motion respects the viewer's reduced-motion setting automatically.
+`;
+}
+
+// ---------- example cast on the connect screen ----------
+let heroTimer = null;
+function renderHero() {
+  const host = $("cast"); clearLive(heroLive); host.replaceChildren();
+  $("stage").dataset.surface = S.surface; $("stageTag").textContent = "Example"; $("stageNote").textContent = "";
+  const size = sizeFor(host, EXAMPLES.length, 170);
+  const defs = {}; EXAMPLES.forEach((e) => (defs[e.id] = faceCfg(e))); AgentRig.defineAgents(defs);
+  EXAMPLES.forEach((e) => { const h = el("div"); host.append(el("div", { class: "slot" }, h)); mountOne(h, e, size, heroLive); });
+  $("states").replaceChildren(...STATES.map(([v, l]) => el("button", { "aria-pressed": String(S.state === v), onclick: () => { S.state = v; heroLive.forEach((x) => x.setState(v)); clearInterval(heroTimer); $("states").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", String(STATES[j][0] === v))); } }, l)));
+  clearInterval(heroTimer); let k = STATES.findIndex(([v]) => v === S.state);
+  heroTimer = setInterval(() => { k = (k + 1) % STATES.length; S.state = STATES[k][0]; heroLive.forEach((a) => a.setState(S.state));
+    $("states").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", String(j === k))); }, 2800);
+}
+function stopHero() { clearInterval(heroTimer); clearLive(heroLive); }
+
+// ---------- boot ----------
+async function boot() {
+  for (const e of EXAMPLES) { e.face = await autoFace(e.body); e.face.yRel = e.eyeY ?? 0.56; }
+  go("connect");
+  $("connectBtn").onclick = connect;
+  $("readyBtn").onclick = () => showPanel("sets");
+  document.querySelectorAll("[data-back]").forEach((b) => (b.onclick = () => showPanel(b.dataset.back)));
+  $("tuneBack").onclick = () => showPanel(S.ready ? "sets" : "create");
+  $("readyConnectBtn").onclick = () => { showPanel("start"); connect(); }; $("randomBtn").onclick = randomize; $("genBtn").onclick = generateAll;
+  $("exportBtn").onclick = exportKit;
+  $("regenBtn").onclick = () => { const t = $("shapeText").value.trim(), cur = (S.agents[S.selected]?.shape || "").trim(); regen(S.selected, t && t !== cur ? t : null); };
+  $("shapeText").oninput = syncShape;
+  ["eyeY", "eyeDx", "eyeS"].forEach((id) => ($(id).oninput = tuneEyes));
+  $("glow").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.glow = +b.dataset.v; [...live, ...small, ...heroLive].forEach((x) => x.setGlow(S.glow)); $("glow").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); };
+  $("surface").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.surface = b.dataset.v; $("stage").dataset.surface = S.surface; castSig = sigOf(); $("surface").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); };
+  const drop = $("drop"), file = $("file");
+  drop.onclick = () => file.click(); drop.onkeydown = (e) => (e.key === "Enter" || e.key === " ") && file.click();
+  file.onchange = () => { addFiles([...file.files]); file.value = ""; };
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); }; drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove("over"); addFiles([...e.dataTransfer.files]); };
+  // paste works anywhere on the Describe step, one image or several at a time
+  document.addEventListener("paste", (e) => { if (S.panel !== "create") return;
+    const dt = e.clipboardData; if (!dt) return;
+    const fs = [...(dt.files || [])].length ? [...dt.files] : [...(dt.items || [])].filter((i) => i.kind === "file").map((i) => i.getAsFile()).filter(Boolean);
+    const imgs = fs.filter((f) => f.type.startsWith("image/")); if (!imgs.length) return;
+    e.preventDefault(); addFiles(imgs); });
+  // re-lay out the cast whenever its box changes size (window resize, fonts settling, the side panel opening)
+  let rt; const widths = new WeakMap();
+  const ro = new ResizeObserver((entries) => { for (const en of entries) { const w = Math.round(en.contentRect.width), prev = widths.get(en.target); widths.set(en.target, w);
+    if (prev != null && Math.abs(prev - w) > 12) { clearTimeout(rt); rt = setTimeout(refreshStage, 120); } } });
+  ro.observe($("cast"));
+  if (document.fonts?.ready) document.fonts.ready.then(() => { if (!S.agents.length) renderHero(); });
+  $("logBtn").onclick = async () => { const txt = JSON.stringify({ step: S.step, agents: S.agents.map((a) => ({ id: a.id, status: a.status, error: a.error, jobId: a.jobId })), log: LOG.slice(-60) }, null, 1);
+    try { await navigator.clipboard.writeText(txt); $("logBtn").textContent = "Copied"; } catch { const t = el("textarea", { style: "min-height:160px" }); t.value = txt; document.querySelector("footer").prepend(t); t.select(); }
+    setTimeout(() => ($("logBtn").textContent = "Copy activity log"), 1500); };
+  if (location.hash === "#debug") $("debugFoot").hidden = false;   // troubleshooting: open the page with #debug
+  CL.use("mcp").then(async (m) => { S.mcp = m; if (!m) return setConn("", "Not connected");
+    try { const l = await m.listTools(); const s = l.servers.find((x) => x.server === HF); if (!s) setConn("bad", "Higgsfield not added"); else if (s.authStatus === "needs_reauth") setConn("bad", "Reconnect Higgsfield"); } catch {} });
+}
+if (!window.claude) window.__studio = { S, go, EXAMPLES, renderAgents };   // local preview only: no claude.ai, no connectors
+boot();
+})();
+</script>

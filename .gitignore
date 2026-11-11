@@ -1,0 +1,4 @@
+# The zip goes on the GitHub Release, not in the repo
+*.zip
+.DS_Store
+__pycache__/

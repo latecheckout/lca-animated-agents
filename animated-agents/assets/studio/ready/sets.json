@@ -1,0 +1,14 @@
+{
+  "flat": {"title": "Flat set", "material": "flat", "items": [
+    {"id": "flat-1", "role": "Plans the day", "bottom": 0.972, "eyeY": 0.52},
+    {"id": "flat-2", "role": "Answers fast", "bottom": 0.972, "eyeY": 0.52},
+    {"id": "flat-3", "role": "Checks the details", "bottom": 0.949, "eyeY": 0.66}]},
+  "glass": {"title": "Glass set", "material": "glass", "items": [
+    {"id": "glass-1", "role": "Keeps you company", "bottom": 0.919, "eyeY": 0.46},
+    {"id": "glass-2", "role": "Remembers things", "bottom": 0.824, "eyeY": 0.58},
+    {"id": "glass-3", "role": "Celebrates wins", "bottom": 0.957, "eyeY": 0.52}]},
+  "plush": {"title": "Plush set", "material": "plush", "items": [
+    {"id": "plush-1", "role": "Coaches you", "bottom": 0.971, "eyeY": 0.44},
+    {"id": "plush-2", "role": "Brainstorms ideas", "bottom": 0.972, "eyeY": 0.46},
+    {"id": "plush-3", "role": "Guards your data", "bottom": 0.971, "eyeY": 0.44}]}
+}
