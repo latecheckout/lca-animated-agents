@@ -2,6 +2,8 @@
 // States: idle, working, waiting, blocked, thinking, done (plus sleeping). One shared loop for every agent on the page.
 // Each agent's face settings (fractions of its square body image): face = where the eyes centre, dx = half the gap
 // between the eyes, w/h = eye size, bottom = where the body touches the ground, scale = body size tweak.
+// eyeStyle: "classic" (tall pill eyes, the default), "kawaii" (big round eyes with a white rim, a shine and a tiny
+// "w" mouth) or "smiley" (small dot eyes and a wide smile). It can change live: the next frame uses it.
 // Register yours with defineAgents({ name: {...} }); anything missing falls back to DEFAULT_FACE.
 const DEFAULT_FACE = { face: [0.5, 0.55], dx: 0.15, w: 0.084, h: 0.125, bottom: 0.97, mood: "neutral", scale: 1 };
 const AGENTS = {};
@@ -68,18 +70,21 @@ export function createAgent(host, name, src, opts = {}) {
   const eyes = [-1, 1].map((s) => {
     const cp = el("clipPath", { id: id + "c" + s }, svg); const poly = el("polygon", {}, cp);
     const g = el("g", {}, svg);
+    const rim = el("ellipse", { fill: "#fff", "clip-path": `url(#${id}c${s})` }, g); // kawaii: white ring around the eye
     const ell = el("ellipse", { fill: INK, "clip-path": `url(#${id}c${s})` }, g);
     const arc = el("path", { fill: "none", stroke: INK, "stroke-linecap": "round" }, g);
     const glint = el("circle", { fill: "#fff", opacity: 0.85, "clip-path": `url(#${id}c${s})` }, g);
     const glint2 = el("circle", { fill: "#fff", opacity: 0.7, "clip-path": `url(#${id}c${s})` }, g);
-    return { s, poly, ell, arc, glint, glint2 };
+    return { s, poly, rim, ell, arc, glint, glint2, cx: 0, cy: 0 };
   });
+  const mouth = el("path", { fill: "none", stroke: INK, "stroke-linecap": "round", "stroke-linejoin": "round" }, svg);
+  const mouthOpen = el("path", { fill: INK, stroke: INK, "stroke-linejoin": "round" }, svg); // open mouths: grin, "o"
   const badge = document.createElement("div"); badge.className = "agent-badge"; badge.setAttribute("aria-hidden", "true");
   badge.innerHTML = '<span class="bang">!</span><span class="dots"><i></i><i></i><i></i></span>';
   Object.assign(badge.style, { width: size * 0.3 + "px", height: size * 0.3 + "px", fontSize: size * 0.2 + "px", left: size * 0.74 + "px", top: size * 0.02 + "px" }); host.appendChild(badge);
   host.setAttribute("role", "img");
   const a = {
-    host, name, cfg, size, body, shadow, glow, swirl, eyes, img, spark: 0, pulse: 0, fxB, fxF, fxDpr, bx: null, fx: null, badge, jolt: -1, head: [0, 0], headV: [0, 0], wW: 0, wS: 0, hopT: 0, bp: Math.random(), visible: true, aura: opts.glow ?? 0, tA: (opts.tint && opts.tint.aura) || [170, 190, 210], tB: (opts.tint && opts.tint.aura2) || [235, 238, 242],
+    host, name, cfg, size, body, shadow, glow, swirl, eyes, mouth, mouthOpen, mx: { w: 1, d: 1, o: 0, r: 0 }, img, spark: 0, pulse: 0, fxB, fxF, fxDpr, bx: null, fx: null, badge, jolt: -1, head: [0, 0], headV: [0, 0], wW: 0, wS: 0, hopT: 0, bp: Math.random(), visible: true, aura: opts.glow ?? 0, tA: (opts.tint && opts.tint.aura) || [170, 190, 210], tB: (opts.tint && opts.tint.aura2) || [235, 238, 242],
     state: opts.state || "idle", eyeK: size < 70 ? 1.32 : 1, mood: opts.mood || "default", interactive: opts.interactive !== false,
     t: Math.random() * 10, look: [0, 0], lookT: [0, 0], nextLook: 1 + Math.random() * 2,
     blinkAt: 1 + Math.random() * 3, blinkT: -1, idleHopAt: 3 + Math.random() * 5, idleHop: -1, glowV: 0, react: -1, hopN: 0, pointer: null,
@@ -144,16 +149,24 @@ function eyePath(e, cfg, mood, open, look, K = 1, spark = 0, turn = 0) {
   const cy = 100 * (cfg.face[1] + look[1] * cfg.h * 0.35);
   const rx = 50 * cfg.w * K * squeeze, ry0 = 50 * cfg.h * K, ry = ry0 * Math.max(open, 0.06);
   const showEll = mood !== "sleepy";
+  const style = cfg.eyeStyle || "classic";
   e.ell.style.display = showEll ? "" : "none";
   e.arc.style.display = showEll ? "none" : "";
   e.glint.style.display = "none";
   let RX = rx, RY = ry;
+  // kawaii: big, perfectly round eyes; smiley: small dots
+  if (style === "kawaii") { const R = Math.max(rx, ry0) * 1.08; RX = R * squeeze; RY = R * Math.max(open, 0.06); }
+  if (style === "smiley") { RX = rx * 0.78; RY = ry0 * 0.62 * Math.max(open, 0.06); }
   const custom = mood && typeof mood === "object" ? mood : null;
   if (mood === "wide") { RX = rx * 1.1; RY = ry0 * 1.14 * Math.max(open, 0.06); }
   if (mood === "excited") { RX = rx * 1.17; RY = ry0 * 1.24 * Math.max(open, 0.06); }
   if (custom) { RX = rx * custom.wide; RY = ry0 * custom.wide * 1.04 * Math.max(open, 0.06); }
   if (mood === "shock") { RX = rx * 1.24; RY = ry0 * 1.2 * Math.max(open, 0.06); }
   e.ell.setAttribute("cx", cx); e.ell.setAttribute("cy", cy); e.ell.setAttribute("rx", RX); e.ell.setAttribute("ry", RY);
+  e.cx = cx; e.cy = cy; e.RX = RX; e.vis = vis; e.RYfull = RY / Math.max(open, 0.06);
+  const rimOn = style === "kawaii" && showEll;
+  e.rim.style.display = rimOn ? "" : "none";
+  if (rimOn) { const w = RX * 0.2; e.rim.setAttribute("cx", cx); e.rim.setAttribute("cy", cy); e.rim.setAttribute("rx", RX + w); e.rim.setAttribute("ry", RY + w * Math.max(open, 0.06)); e.rim.style.opacity = vis.toFixed(3); }
   // lid clip: keep the area below a line; inner side = toward centre
   // lids are always level (never slanted, so nothing reads angry): a top lid keeps the part below a line,
   // a bottom lid (content) keeps the part above one
@@ -163,11 +176,69 @@ function eyePath(e, cfg, mood, open, look, K = 1, spark = 0, turn = 0) {
   const lidded = false;
   e.glint.setAttribute("cx", cx - s * RX * 0.05 - RX * 0.28 + look[0] * RX * 0.18); e.glint.setAttribute("cy", lidded ? cy + RY * 0.22 : cy - RY * 0.42); e.glint.setAttribute("r", RX * (lidded ? 0.22 : 0.27) * (1 + 0.35 * spark));
   e.glint2.style.display = "none";
+  if (style === "kawaii" && showEll && open > 0.5) { e.glint.style.display = ""; e.glint.setAttribute("r", RX * 0.3 * (1 + 0.35 * spark)); e.glint.style.opacity = (0.9 * vis).toFixed(3); }
   e.glint2.setAttribute("cx", cx + RX * 0.3 + look[0] * RX * 0.15); e.glint2.setAttribute("cy", lidded ? cy + RY * 0.45 : cy + RY * 0.3); e.glint2.setAttribute("r", RX * 0.13 * spark);
   if (mood === "sleepy") {
     e.arc.setAttribute("fill", "none"); e.arc.setAttribute("stroke", INK);
     e.arc.setAttribute("d", `M${cx - rx * 1.05},${cy} Q${cx},${cy + ry0 * 0.45} ${cx + rx * 1.05},${cy}`);
     e.arc.setAttribute("stroke-width", rx * 0.5);
+  }
+}
+
+// The mouth for the kawaii and smiley styles: centred under the eyes, it moves with them, hides on the turn and
+// changes with the state. w = width, d = curve (1 smile, 0 flat), o = how open, r = how round (an "o").
+function mouthTarget(a, perk, sigh, br) {
+  if (a.react >= 0 && a.celebrate) return { w: 1.15, d: 1.2, o: 0.85, r: 0 };         // done: a big open grin
+  if (a.react >= 0) return { w: 1.1, d: 1.2, o: 0.6, r: 0 };                            // a tap: a happy "ha"
+  switch (a.state) {
+    case "working": return { w: 1.04, d: 1.1, o: 0.12 + 0.4 * a.pulse, r: 0 };        // opens a little with every hop
+    case "thinking": return { w: 0.45, d: 0, o: 0, r: 0 };                              // a small, flat, focused line
+    case "waiting": return sigh > 0.3 ? { w: 0.32, d: 0, o: 0.8, r: 1 }                 // the sigh: a tiny "o"
+      : { w: 0.55 + 0.45 * perk, d: 0.15 + 0.85 * perk, o: 0, r: 0 };                   // drowsy, then a smile on the perk
+    case "blocked": return { w: 0.36, d: 0, o: 1, r: 1 };                               // startled "o"
+    case "done": return { w: 1.15, d: 1.25, o: 0.2, r: 0 };
+    case "sleeping": return { w: 0.24, d: 0, o: 0.55 + 0.2 * br, r: 1 };                // a small breathing "o"
+    default: return { w: 1, d: 1, o: 0, r: 0 };
+  }
+}
+function mouthPath(a, cfg, dt, perk, sigh, br) {
+  const style = cfg.eyeStyle || "classic", m = a.mouth, mo = a.mouthOpen, [l, r] = a.eyes;
+  if (style === "classic" || !l.vis) { m.style.display = mo.style.display = "none"; return; }
+  const T = mouthTarget(a, perk, sigh, br), X = a.mx;
+  for (const k of ["w", "d", "o", "r"]) X[k] = ease(X[k], T[k], 10, dt);
+  const vis = Math.min(l.vis, r.vis).toFixed(3);
+  const cx = (l.cx + r.cx) / 2, gap = Math.abs(r.cx - l.cx), eh = 50 * cfg.h;
+  const kawaii = style === "kawaii";
+  const base = kawaii ? gap * 0.32 : gap * 1.56;                                         // full mouth width at rest
+  // Anchor under the lowest point of the eyes as they are right now (excited eyes grow, waiting eyes look down),
+  // plus a fixed gap, so the mouth never touches them in any state
+  const eyeBottom = Math.max(l.cy + (l.RYfull || 0), r.cy + (r.RYfull || 0));
+  const y = Math.max(Math.max(l.cy, r.cy) + eh * (kawaii ? 0.55 : 1.05), eyeBottom + gap * (kawaii ? 0.1 : 0.2));
+  const sw = Math.max(0.9, gap * (kawaii ? 0.045 : 0.06));
+  const W = base * X.w / 2;
+  m.setAttribute("stroke-width", sw); mo.setAttribute("stroke-width", sw * 0.6);
+  if (X.r > 0.5) {
+    // a round "o"
+    const rx = Math.max(gap * 0.06, W * 0.5), ry = rx * (0.75 + 0.45 * X.o);
+    mo.setAttribute("d", `M${cx - rx},${y} a${rx},${ry} 0 1,0 ${2 * rx},0 a${rx},${ry} 0 1,0 ${-2 * rx},0`);
+    mo.style.display = ""; m.style.display = "none"; mo.style.opacity = vis; return;
+  }
+  if (X.o > 0.06) {
+    // open: a flat-ish top edge and a deeper bottom edge, like a grin
+    // the open shape is narrower than the line smile and its depth follows the eye gap, so it never swallows the face
+    const Wo = kawaii ? W : W * 0.62, top = Wo * 0.14 * X.d;
+    const bot = (kawaii ? Wo * 0.8 : gap * 0.3) * (0.35 + 0.65 * X.o) * Math.max(0.3, X.d);
+    mo.setAttribute("d", `M${cx - Wo},${y} Q${cx},${y + top} ${cx + Wo},${y} Q${cx},${y + bot * 2} ${cx - Wo},${y} Z`);
+    mo.style.display = ""; m.style.display = "none"; mo.style.opacity = vis; return;
+  }
+  mo.style.display = "none"; m.style.display = ""; m.style.opacity = vis;
+  if (kawaii) {
+    // a tiny "w": two small bumps, flattening out as d goes to 0
+    const w = W, h = w * 0.9 * X.d;
+    m.setAttribute("d", `M${cx - w},${y} q${w / 2},${h} ${w},0 q${w / 2},${h} ${w},0`);
+  } else {
+    // smiley: a wide, soft U that flattens and narrows with the state
+    m.setAttribute("d", `M${cx - W},${y} Q${cx},${y + W * 0.7 * X.d} ${cx + W},${y}`);
   }
 }
 
@@ -265,6 +336,7 @@ function step(a, dt) {
   a.spark = ease(a.spark, working ? 0.6 + 0.4 * a.pulse : 0, 8, dt);
   a.swirl.style.transform = `translate(-50%,-50%) rotate(${(t * 70) % 360}deg)`;
   a.eyes.forEach((e) => eyePath(e, cfg, mood, Math.max(open, 0.08), a.look, a.eyeK * (1 + 0.06 * a.glowV), a.spark, turn));
+  mouthPath(a, cfg, dt, perk, sigh, br);
   drawFx(a, dt, t, y, still);
   const bk = blocked ? "alert" : thinking ? "dots" : null;
   if (bk && a.badgeKind !== bk) { a.badgeKind = bk; a.badge.className = "agent-badge " + bk; a.badgeS = 0; a.badgeT = 0;

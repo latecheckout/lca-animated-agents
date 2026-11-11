@@ -22,11 +22,14 @@ Claude's own environment, which often can't reach Higgsfield's image host. Teste
 
 ```bash
 mkdir -p ~/agent-kit && cd ~/agent-kit \
- && curl -sfL -o bundle.zip 'BUNDLE_URL' && unzip -oq bundle.zip \
+ && curl -sfL -o bundle.zip 'BUNDLE_URL' \
+ && python3 -c "import hashlib,sys; sys.exit(hashlib.sha256(open('bundle.zip','rb').read()).hexdigest() != 'BUNDLE_SHA256')" \
+ && unzip -oq bundle.zip \
  && python3 kit_remote.py --title "<set name>" --mode <glass|solid> agent-1=<url> agent-2=<url> agent-3=<url>
 ```
 
-`BUNDLE_URL` is the hosted bundle (below). Pass `image_paths: ["agent-kit/out/sheet.png"]` in the same call so the
+`BUNDLE_URL` and `BUNDLE_SHA256` are the hosted bundle and its checksum (below). If the checksum line fails, stop:
+don't unzip it, use the install command at the end of "The bundle" instead. Pass `image_paths: ["agent-kit/out/sheet.png"]` in the same call so the
 cut-out bodies come back as an image: look at it. If one is clipped or messy, regenerate that agent and rerun.
 Agents in the kit are named after the title (`glass-helpers-1`, `-2`, ...) so two kits never collide. A render that
 can't be cut out is skipped and listed under `skipped` in the last stdout line (JSON); the kit builds from the rest,
@@ -46,15 +49,17 @@ so regenerate only the skipped one.
 ## The bundle
 
 `scripts/remote_bundle.py --zip agent-kit-bundle.zip` packs `cutout.py`, `kit_remote.py` and `assets/template/agentRig.js`.
-Current hosted copy (Higgsfield storage, uploaded 2026-11-04):
+The hosted copy is `bundle/agent-kit-bundle.zip` in the skill's GitHub repo:
 
-BUNDLE_URL = https://d2ol7oe51mr4n9.cloudfront.net/user_38o6K5pe6MGL8oJwU2qdmBPjEIU/37e47250-40e3-4c86-a739-a6e73c79c815.zip
+BUNDLE_URL = https://raw.githubusercontent.com/latecheckout/lca-animated-agents/main/bundle/agent-kit-bundle.zip
+BUNDLE_SHA256 = fc85f215fa97e1423aad52fe98c1f2fcb1e60aa761d1e72135d13d3a12e9876d
 
-After changing any of those three files, rebuild the zip, host it again and update this URL (a public GitHub repo or
-the LCA Labs site is the better long-term home). If the URL ever fails, `python remote_bundle.py --out install.txt`
+After changing any of those three files, rebuild the zip, commit it and update the checksum. If the URL ever fails, `python remote_bundle.py --out install.txt`
 writes a self-contained install command (about 23 KB) to run in the sandbox instead.
 
 ## Tuning afterwards
 
 Eye position per agent is in `agents.json` inside the kit. To change it, edit the values (`face`, `dx`, `w`, `h`) and
-rebuild, or open the studio page for sliders.
+rebuild, or open the studio page for sliders. `eyeStyle` picks the look: `"classic"` (the default pill eyes), `"kawaii"`
+(big round eyes with a white rim, a shine and a tiny "w" mouth) or `"smiley"` (dot eyes and a wide smile). Kawaii and
+Smiley mouths change with the state on their own.

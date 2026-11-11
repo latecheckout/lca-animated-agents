@@ -1,4 +1,6 @@
 # The zip goes on the GitHub Release, not in the repo
 *.zip
+# ...except the small helper bundle the skill downloads in chat-only mode
+!bundle/agent-kit-bundle.zip
 .DS_Store
 __pycache__/
