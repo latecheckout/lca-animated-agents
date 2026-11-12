@@ -56,7 +56,7 @@ No video files. The bodies are PNGs, and the eyes and motion are drawn in code, 
 4. Start a new chat and say: **"Make me some animated agents."**
 
 <p align="center">
-  <img src="media/connect.gif" alt="Connecting Higgsfield in Claude" width="720">
+  <img src="media/connect.gif" alt="Connecting Higgsfield from the Agent Studio" width="720">
 </p>
 
 ### Claude Code
