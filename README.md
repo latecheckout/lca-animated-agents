@@ -20,7 +20,7 @@
 
 ## What you get
 
-Agents need a face. This skill gives each one a body, live eyes and six working states:
+Agents need a face. This skill gives each one a body, live eyes and seven working states:
 
 | State | What it shows |
 |---|---|
@@ -30,6 +30,7 @@ Agents need a face. This skill gives each one a body, live eyes and six working 
 | **Waiting** | Patient, eyes on the user |
 | **Blocked** | "!" badge, needs a hand |
 | **Done** | A little hop and turn |
+| **Sleeping** | Eyes closed, slow breathing |
 
 You export a kit that drops straight into any app or prototype:
 
@@ -69,21 +70,25 @@ Then ask Claude Code to "make me some animated agents". Run `python scripts/chec
 
 ## How it works
 
-**1. Describe.** Write a line about your agents, or drop in up to five inspiration images. Pick a material (glass, frosted, jelly, clay, plush, ceramic, flat) and how many agents (1 to 5). Or hit **Randomize**.
+**1. Describe.** Write a line about your agents, or drop in up to five inspiration images. Pick a material (auto, glass, frosted, jelly, clay, plush, ceramic, flat) and how many agents (1 to 5). Or hit **Randomize**.
 
 <p align="center">
-  <img src="media/generate.gif" alt="Generating a cast of agents in the Agent Studio" width="720">
+  <img src="media/describe.gif" alt="Describing a cast of agents in the Agent Studio" width="720">
 </p>
 
 **2. Generate.** Claude plans the cast, and every agent comes out as its own character from the same family: different shapes, top features and colours. Inspiration images become the style for the whole set, and you can ask for any number of agents however many images you add. Higgsfield renders the bodies on your own account, about 1.5 credits per agent.
 
-**3. Tune.** Pick an eye style (Classic, Kawaii or Smiley, with mouths that move with the state), flip through every state and nudge the eyes, for the whole set or one agent. Tell any agent what to change ("rounder", "more pink") and only that one regenerates.
+**3. Tune.** Pick an eye style (Classic, Kawaii or Smiley, with mouths that move with the state), flip through every state and nudge the eyes, for the whole set or one agent. Add a glow and preview them on a light or dark background. Tell any agent what to change ("rounder", "more pink") and only that one regenerates.
 
 <p align="center">
   <img src="media/tune.gif" alt="Flipping through states and tuning the eyes" width="720">
 </p>
 
 **4. Export.** See your agents working inside a sample app, then download the kit, or copy instructions for your coding agent (Claude Code, Cursor...) to add them for you.
+
+<p align="center">
+  <img src="media/export.gif" alt="Exporting the agent kit" width="720">
+</p>
 
 ### No Higgsfield?
 
