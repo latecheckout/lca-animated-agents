@@ -75,15 +75,15 @@ Then ask Claude Code to "make me some animated agents". Run `python scripts/chec
   <img src="media/generate.gif" alt="Generating a cast of agents in the Agent Studio" width="720">
 </p>
 
-**2. Generate.** Claude plans the cast and writes the prompts. Higgsfield renders the bodies on your own account, about 1.5 credits per agent. The first agent becomes the reference, so the set stays consistent.
+**2. Generate.** Claude plans the cast, and every agent comes out as its own character from the same family: different shapes, top features and colours. Inspiration images become the style for the whole set, and you can ask for any number of agents however many images you add. Higgsfield renders the bodies on your own account, about 1.5 credits per agent.
 
-**3. Tune.** Flip through every state, nudge the eyes, check them at 48px and 32px, on light and dark. Regenerate any single agent with a note on what to change.
+**3. Tune.** Pick an eye style (Classic, Kawaii or Smiley, with mouths that move with the state), flip through every state and nudge the eyes, for the whole set or one agent. Tell any agent what to change ("rounder", "more pink") and only that one regenerates.
 
 <p align="center">
   <img src="media/tune.gif" alt="Flipping through states and tuning the eyes" width="720">
 </p>
 
-**4. Export.** Download the kit and drop it into your prototype.
+**4. Export.** See your agents working inside a sample app, then download the kit, or copy instructions for your coding agent (Claude Code, Cursor...) to add them for you.
 
 ### No Higgsfield?
 

@@ -139,8 +139,8 @@ body{background-color:var(--paper);background-image:radial-gradient(rgba(18,18,1
 .wrap{max-width:1320px;min-height:100vh;display:flex;flex-direction:column;box-sizing:border-box}
 header{padding-block:22px 8px}
 /* the workspace sits in the middle of the screen, with real space under the header */
-.ws{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:center;flex:1;padding-block:clamp(28px,6vh,72px)}
-.ws .stage{min-height:clamp(420px,calc(100vh - 230px),680px)}
+.ws{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start;flex:1;padding-block:clamp(20px,4vh,48px)}
+.ws .stage{min-height:clamp(420px,calc(100vh - 150px),680px)}
 body{padding-block:0}
 @media (max-width:980px){.ws{grid-template-columns:minmax(0,1fr)}}
 .left{display:flex;flex-direction:column;gap:14px;min-width:0;position:sticky;top:14px}
@@ -204,6 +204,64 @@ body{padding-block:0}
 .tab{padding:14px 10px 10px}
 .stack{display:flex;flex-direction:column;gap:14px}
 .panel h1{font-size:30px;max-width:none}
+/* The first screen is a landing page, like the Labs web app: everything centred, the hook big, the example agents
+   free on the page (no frame), then the two buttons. The workspace (stage + panel) comes back from the next step. */
+.hero{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.hero[hidden]{display:none}
+.hero-h{font-size:clamp(42px,7.4vw,96px);line-height:.96;letter-spacing:-.045em;max-width:15ch;margin:0 auto;text-wrap:balance}
+.hero-sub{font-size:clamp(17px,1.6vw,21px);line-height:1.35;color:var(--muted);max-width:44ch;margin:0 auto;text-wrap:balance}
+.hero-for{font:400 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0}
+.hero-grad{background:linear-gradient(100deg,#ff7a4d,#ff4fa3 25%,#9a6bff 50%,#2fb8ff 75%,#3fd9a8,#ff7a4d) 0 0/200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:heroShift 9s linear infinite}
+@keyframes heroShift{to{background-position:-200% 0}}
+.ws.landing{display:flex;flex-direction:column;align-items:center;gap:clamp(8px,2vh,20px);max-width:960px;width:100%;margin:0 auto;padding-block:clamp(24px,7vh,88px) 24px}
+.ws.landing .left{position:static;width:100%;align-items:center;gap:clamp(8px,2vh,20px)}
+.ws.landing .stage{width:100%;min-height:clamp(200px,26vh,300px);background:none!important;border:0;box-shadow:none;overflow:visible}
+.ws.landing .stage::before{display:none}
+.ws.landing .stage-tag,.ws.landing .stage-note,.ws.landing .stage-bar{display:none}
+.ws.landing .cast{inset:0}
+.ws.landing .panel{background:none;border:0;box-shadow:none;padding:0;width:100%;max-width:560px}
+.ws.landing .pstep{padding:0}
+.ws.landing #p-start .stack{align-items:center;text-align:center;gap:14px}
+.cta-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.ws.landing .cta-row .btn{height:52px;padding:0 26px;font-size:16px}
+.ws.landing .need{text-align:center}
+body.on-landing .credits{visibility:hidden}
+.stage-hint{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:2;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid var(--rule);backdrop-filter:blur(8px);font-size:12.5px;color:var(--muted);white-space:nowrap}
+.stage-hint:empty,.stage-tag:empty{display:none}
+.stage[data-surface="dark"] .stage-hint{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:#a8a8a3}
+.slot[aria-current="true"]{border-color:rgba(18,18,17,.7)!important;background:rgba(255,255,255,.4)!important;box-shadow:0 10px 30px -16px rgba(18,18,17,.5)}
+.slot.pick:hover{border-color:rgba(127,127,120,.3)}
+.pop-in{animation:popIn .55s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{opacity:0;transform:translateY(14px) scale(.6)}70%{opacity:1}to{opacity:1;transform:none}}
+.float{animation:float 3.2s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+.preview-inspo{position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;gap:8px}
+.preview-inspo img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.7);box-shadow:0 6px 16px -8px rgba(18,18,17,.45)}
+#p-tune.is-generating .tsec{display:none}
+@media (max-width:540px){.cta-row{flex-direction:column;align-self:stretch}.ws.landing .cta-row .btn{width:100%}}
+/* phones: even 20px gutters, a shorter stage so the panel (where you act) is close, compact state pills */
+html,body{margin:0}
+@media (max-width:640px){
+  .ws{gap:12px;padding-block:8px 20px}
+  .ws .stage{min-height:340px}
+  .cast{inset:48px 16px 76px}
+  .stage-tag{top:14px;left:14px}
+  .stage-note{display:none}
+  .stage-bar{bottom:12px}
+  .stage .opts.pills{gap:0;padding:3px}
+  .stage .opts.pills{flex-wrap:nowrap;max-width:100%}
+  .stage .opts.pills button{height:28px;padding:0 7px;font-size:11.5px}
+  .panel{border-radius:22px}
+  .pstep{padding:12px 6px 6px}
+  .ws.landing{padding-block:20px 12px;gap:6px}
+  .ws.landing .left{gap:4px}
+  .ws.landing .stage{min-height:130px}
+  .hero{gap:12px}
+  .hero-for{font-size:11px;letter-spacing:.12em}
+  .appview{inset:48px 10px 14px}
+  .stage.app-on{min-height:440px}
+  .app{font-size:13px}
+}
 .panel .sub{font-size:15.5px}
 .fld{display:flex;flex-direction:column;gap:8px}
 .fld-h{display:flex;justify-content:space-between;align-items:center}
@@ -233,6 +291,45 @@ textarea{border-radius:var(--r-sm);font-size:15px;min-height:96px;background:#ff
 .tsec.row2{flex-direction:row;flex-wrap:wrap;gap:14px 22px}
 .tsec .grp{display:flex;flex-direction:column;gap:8px}
 .tsec .opts.pills{background:var(--hover);border:0}
+.eyestyles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.eyestyles button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px 8px;border:1px solid var(--rule);border-radius:var(--r-sm);background:#fff;font-size:12px;color:var(--ink)}
+.eyestyles button:hover{background:var(--hover)}
+.eyestyles button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink),0 6px 16px -8px rgba(18,18,17,.4)}
+.eyestyles svg{width:48px;height:28px}
+/* change an agent: one card each */
+.acards{display:flex;flex-direction:column;gap:8px}
+.acard{display:flex;flex-direction:column;gap:8px;padding:8px;border:1px solid var(--rule);border-radius:var(--r-md);background:#fff}
+.acard[aria-current="true"]{border-color:var(--ink)}
+.acard-h{display:flex;align-items:center;gap:12px;cursor:pointer}
+.acard-t{width:56px;height:56px;flex:none;display:grid;place-items:center;border-radius:10px;background:radial-gradient(90% 80% at 50% 90%,#ECE9E3,#FAF9F7)}
+.acard-h b{display:block;font-weight:400;font-size:14px}
+.acard-h small{display:block;color:var(--faint);font-size:12px}
+.acard .composer textarea{min-height:52px;font-size:14px}
+.acard .composer-bar{justify-content:space-between;align-items:center;gap:8px}
+.acard .composer-bar .hint-s{padding-left:4px}
+/* drop it in: the code snippet */
+.snip{border-radius:var(--r-sm);background:#141413;overflow:hidden}
+.snip-top{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.snip-top .opts.pills{background:rgba(255,255,255,.08)}
+.snip-top .opts.pills button{color:#a8a8a3;height:26px;font-size:12px}
+.snip-top .opts.pills button[aria-pressed="true"]{background:#F2F1EE;color:#121211}
+.snip-top .link{color:#d8d6d0}
+.snip pre{margin:0;padding:10px 12px;font:12px/1.6 var(--mono);color:#e9e7e2;white-space:pre-wrap;overflow-wrap:anywhere}
+/* the sample app on the stage: a chat where the first agent answers, the rest are its team */
+.appview{position:absolute;inset:56px 20px 24px;display:flex;align-items:center;justify-content:center;z-index:2}
+.appview[hidden]{display:none}
+.app{width:min(440px,100%);border-radius:22px;background:rgba(255,255,255,.88);border:1px solid rgba(18,18,17,.06);box-shadow:0 30px 70px -30px rgba(18,18,17,.45);backdrop-filter:blur(10px);overflow:hidden;font-size:14px}
+.app-h{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(18,18,17,.06)}
+.app-h b{display:block;font-weight:500;font-size:15px;line-height:1.2}
+.app-h small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px}
+.app-h small i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.app-h small i.busy{background:#d39a2c}.app-h small i.ok{background:var(--ok)}
+.app-b{display:flex;flex-direction:column;gap:10px;padding:14px 16px;min-height:132px}
+.app-b p{margin:0;max-width:85%;padding:8px 14px;border-radius:18px;line-height:1.4}
+.app-b .me{align-self:flex-end;background:#121211;color:#fff;border-bottom-right-radius:6px}
+.app-b .it{align-self:flex-start;background:#efede8;border-bottom-left-radius:6px;animation:in .45s var(--ease)}
+.app-f{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid rgba(18,18,17,.06);color:var(--faint);font-size:12px}
+.app-f .team{display:flex;align-items:flex-end;gap:6px}
 .setcard{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:var(--r-md);border:1px solid var(--rule);background:#fff;text-align:left;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
 .setcard:hover{transform:translateY(-2px);border-color:var(--faint);box-shadow:0 12px 26px -16px rgba(18,18,17,.45)}
 .setcard .sc-h{display:flex;justify-content:space-between;align-items:baseline}
@@ -270,21 +367,28 @@ footer{padding-top:18px}
 <main class="ws">
   <!-- left: the stage and its state pills, nothing else -->
   <section class="left">
+    <!-- the hook, on the first screen only: what this is, for whom, in one glance -->
+    <div class="hero" id="hero">
+      <h1 class="hero-h">Make <span class="hero-grad">animated characters</span> for your agents.</h1>
+      <p class="hero-sub">For builders and product teams: type an idea, get a cast of living characters that blink, think and work, ready to use in your product.</p>
+    </div>
     <div class="stage" id="stage" data-surface="light">
-      <span class="stage-tag" id="stageTag">Example</span><span class="stage-note" id="stageNote"></span>
+      <span class="stage-tag" id="stageTag">Example</span><span class="stage-note" id="stageNote"></span><span class="stage-hint" id="stageHint"></span>
       <div class="cast" id="cast"></div>
+      <div class="appview" id="appView" hidden></div>
       <div class="stage-bar"><div class="opts pills" id="states" role="group" aria-label="State"></div></div>
     </div>
+    <div class="sizes card" id="sizesCard" hidden><div class="sizerow" id="s48"><span class="label dim">48px</span></div><div class="sizerow" id="s32"><span class="label dim">32px</span></div></div>
   </section>
 
   <!-- right: one panel that moves forward step by step: start → (sets | create) → tune -->
   <aside class="panel">
     <div class="pstep" id="p-start">
       <div class="stack">
-        <h1>Make agents for your app.</h1>
-        <p class="sub">Animated characters for every state your AI goes through. Export them straight into your prototype.</p>
-        <button class="btn glow wide" id="connectBtn">Connect Higgsfield</button>
-        <button class="btn line wide" id="readyBtn">Try a ready-made set</button>
+        <div class="cta-row">
+          <button class="btn glow" id="connectBtn">Connect Higgsfield</button>
+          <button class="btn line" id="readyBtn">Try a ready-made set</button>
+        </div>
         <p class="need" id="needLine">Ready-made sets are free. To design your own, you need a <a href="https://higgsfield.ai" target="_blank" rel="noopener">Higgsfield account</a>.</p>
         <div id="connectMsg"></div>
       </div>
@@ -324,31 +428,44 @@ footer{padding-top:18px}
         <div><h2 id="tuneTitle">Your agents</h2><p class="note-s" id="tuneNote"></p></div>
         <div id="agentsMsg"></div>
         <div class="tsec">
+          <div class="fld-h"><span class="label dim">Eyes</span><div class="opts pills" id="eyeScope" role="group" aria-label="Apply eyes to"><button data-v="all" aria-pressed="true">All</button><button data-v="selected" aria-pressed="false">Selected</button></div></div>
+          <!-- eye style for the whole set (default) or just the selected agent: classic pill eyes, kawaii (big round eyes and a tiny w mouth), smiley (dots and a smile); mouths move with the state -->
+          <div class="eyestyles" id="eyeStyle" role="group" aria-label="Eye style">
+            <button data-v="classic" aria-pressed="true"><svg viewBox="0 0 48 28" aria-hidden="true"><ellipse cx="16" cy="13" rx="3.6" ry="6.2" fill="#0A1834"/><ellipse cx="32" cy="13" rx="3.6" ry="6.2" fill="#0A1834"/></svg>Classic</button>
+            <button data-v="kawaii" aria-pressed="false"><svg viewBox="0 0 48 28" aria-hidden="true"><circle cx="14" cy="12" r="7.2" fill="#fff" stroke="#e6e3dd" stroke-width=".6"/><circle cx="14" cy="12" r="6" fill="#0A1834"/><circle cx="12" cy="9.6" r="1.8" fill="#fff"/><circle cx="34" cy="12" r="7.2" fill="#fff" stroke="#e6e3dd" stroke-width=".6"/><circle cx="34" cy="12" r="6" fill="#0A1834"/><circle cx="32" cy="9.6" r="1.8" fill="#fff"/><path d="M20.5 21.5 q1.75 2.6 3.5 0 q1.75 2.6 3.5 0" fill="none" stroke="#0A1834" stroke-width="1.3" stroke-linecap="round"/></svg>Kawaii</button>
+            <button data-v="smiley" aria-pressed="false"><svg viewBox="0 0 48 28" aria-hidden="true"><ellipse cx="17" cy="8" rx="2.6" ry="3.6" fill="#0A1834"/><ellipse cx="31" cy="8" rx="2.6" ry="3.6" fill="#0A1834"/><path d="M13 16 Q24 27 35 16" fill="none" stroke="#0A1834" stroke-width="1.7" stroke-linecap="round"/></svg>Smiley</button>
+          </div>
+        </div>
+        <div class="tsec row2"><span class="label dim" style="flex-basis:100%">Look</span>
+          <div class="grp"><span class="label dim">Glow</span><div class="opts pills" id="glow"><button data-v="0" aria-pressed="true">Off</button><button data-v="1" aria-pressed="false">On</button><button data-v="1.8" aria-pressed="false">Strong</button></div></div>
+          <div class="grp"><span class="label dim">Surface</span><div class="opts pills" id="surface"><button data-v="light" aria-pressed="true">Light</button><button data-v="dark" aria-pressed="false">Dark</button></div></div>
+        </div>
+        <div class="tsec">
           <div class="label dim" id="detailFor">Agent 1</div>
           <div class="field"><span>Eye height</span><input type="range" id="eyeY" min="0.2" max="0.85" step="0.005" aria-label="Eye height"><span class="mono" id="eyeYv"></span></div>
           <div class="field"><span>Spacing</span><input type="range" id="eyeDx" min="0.06" max="0.32" step="0.002" aria-label="Eye spacing"><span class="mono" id="eyeDxv"></span></div>
           <div class="field"><span>Eye size</span><input type="range" id="eyeS" min="0.5" max="1.8" step="0.01" aria-label="Eye size"><span class="mono" id="eyeSv"></span></div>
         </div>
         <div class="tsec" id="ownTools">
-          <span class="label dim">Shape</span>
-          <!-- composer: Regenerate in the box's footer bar. Edited text = new shape; unchanged = a fresh take on the same shape. -->
-          <div class="composer">
-            <textarea id="shapeText" aria-label="Shape description" placeholder="Describe a new shape for this agent"></textarea>
-            <div class="composer-bar"><button class="btn sm glow" id="regenBtn" title="Make a new image from the description above">Regenerate</button></div>
-          </div>
-          <span class="hint-s" id="shapeHint">Edit the description to regenerate with a new shape.</span>
+          <span class="label dim">Change an agent</span>
+          <!-- one card per agent, as in the Labs web app: a live thumbnail, its status, what to change and Regenerate -->
+          <div class="acards" id="agentCards"></div>
         </div>
         <div class="tsec" id="readyNote" hidden>
           <span class="label dim">Make your own</span>
           <p class="note-s">To design agents from your own idea or inspiration, connect a Higgsfield account.</p>
           <button class="btn line sm" id="readyConnectBtn">Connect Higgsfield</button>
         </div>
-        <div class="tsec row2">
-          <div class="grp"><span class="label dim">Glow</span><div class="opts pills" id="glow"><button data-v="0" aria-pressed="true">Off</button><button data-v="1" aria-pressed="false">On</button><button data-v="1.8" aria-pressed="false">Strong</button></div></div>
-          <div class="grp"><span class="label dim">Surface</span><div class="opts pills" id="surface"><button data-v="light" aria-pressed="true">Light</button><button data-v="dark" aria-pressed="false">Dark</button></div></div>
+        <div class="tsec" id="useTools">
+          <div class="fld-h"><span class="label dim">Drop it in</span><button class="link dim" id="appBtn">See them in an app</button></div>
+          <div class="snip">
+            <div class="snip-top"><div class="opts pills" id="snipLang" role="group" aria-label="Code"><button data-v="html" aria-pressed="true">HTML</button><button data-v="react" aria-pressed="false">React</button></div><button class="link dim" id="snipCopy">Copy</button></div>
+            <pre id="snipCode"></pre>
+          </div>
+          <span class="hint-s">Switch <code>state</code> as your AI works: idle, thinking, working, waiting, blocked, done, sleeping.</span>
         </div>
-        <div class="tsec sizes"><span class="label dim">Small sizes</span><div class="sizerow" id="s48"><span class="label dim">48px</span></div><div class="sizerow" id="s32"><span class="label dim">32px</span></div></div>
-        <button class="btn glow wide" id="exportBtn" disabled><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0L5 7m3 3 3-3M3 12.5h10"/></svg>Export kit</button>
+        <button class="btn glow wide" id="agentBtn" disabled title="A ready-to-paste prompt for Claude Code, Cursor and the like">Copy instructions for your coding agent</button>
+        <button class="btn line wide" id="exportBtn" disabled><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0L5 7m3 3 3-3M3 12.5h10"/></svg>Export kit</button>
       </div>
     </div>
   </aside>
@@ -375,22 +492,22 @@ const IMAGE_MODEL = { model: "gpt_image_2_5", quality: "high", resolution: "1k",
 const STATES = [["idle", "Idle"], ["thinking", "Thinking"], ["working", "Working"], ["waiting", "Waiting"], ["blocked", "Blocked"], ["done", "Done"]];
 const STEPS = [["connect", "Connect"], ["describe", "Describe"], ["agents", "Agents"]];
 const BODY_MATERIALS = {
-  glass: ["Glass", "Made of solid glass that is lightly frosted on the inside, mostly translucent with a soft milky haze within the glass, while the outer surface is perfectly smooth, polished and high-gloss like wet glass. Strong shine: crisp bright specular highlights on the upper left, a clean curved window reflection, sharp glints, and a bright thin rim of light along the edge", "glass", "Flat pure black background", "radial-gradient(circle at 34% 28%,#fff 0 9%,transparent 11%),linear-gradient(160deg,#d9d2ff,#8fb0ff 55%,#9ef0dd)"],
+  glass: ["Glass", "Made of solid glass that is lightly frosted on the inside, mostly translucent with a soft milky haze within the glass, while the outer surface is perfectly smooth, polished and high-gloss like polished glass. Strong shine: crisp bright specular highlights on the upper left, a clean curved window reflection, sharp glints, and a bright thin rim of light along the edge", "glass", "Flat pure black background", "radial-gradient(circle at 34% 28%,#fff 0 9%,transparent 11%),linear-gradient(160deg,#d9d2ff,#8fb0ff 55%,#9ef0dd)"],
   frosted: ["Frosted", "Made entirely of solid frosted glass all the way through, like sandblasted or acid-etched glass, with a soft satin finish and very fine micro-grain texture. Light diffuses softly through it. Soft broad satin sheen and gentle highlights on the upper left, a faint soft rim along the edge", "glass", "Flat pure black background", "radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),transparent 45%),linear-gradient(160deg,#e9ecf2,#b9c6da)"],
-  jelly: ["Jelly", "Made of soft wobbly translucent jelly, glossy and wet-looking, light glowing through it with a slightly denser colour toward the middle, crisp specular highlights on the upper left", "glass", "Flat pure black background", "radial-gradient(circle at 34% 28%,#fff 0 9%,transparent 11%),radial-gradient(circle at 50% 60%,#ff7aa8,#ffb3cc 70%)"],
-  clay: ["Clay", "Made of smooth matte clay with a soft satin finish, gentle even studio lighting, subtle soft shading", "solid", "Transparent background, the body isolated with nothing behind it", "radial-gradient(circle at 35% 30%,#f6c9a8,#e39a6c 75%)"],
-  plush: ["Plush", "Made of soft short-pile plush fabric like a premium designer toy, fine fuzzy texture catching the light, gentle soft studio lighting, subtle seams only where the shape needs them", "solid", "Transparent background, the body isolated with nothing behind it", "radial-gradient(circle at 40% 35%,#d8e9b8,#9cc27a 80%)"],
-  ceramic: ["Ceramic", "Made of glazed ceramic with a smooth glossy glaze, soft reflections and a clean bright highlight on the upper left, slightly pooled glaze toward the bottom", "solid", "Transparent background, the body isolated with nothing behind it", "radial-gradient(circle at 33% 27%,#fff 0 8%,transparent 10%),linear-gradient(170deg,#9fd4e0,#2f7f99)"],
-  flat: ["Flat", "A flat vector illustration with clean solid colour fills and one soft highlight, no gradients, no outlines", "solid", "Transparent background, the body isolated with nothing behind it", "#FF9F0A"],
+  jelly: ["Jelly", "Made of soft wobbly translucent jelly, glossy and dewy, light glowing through it with a slightly denser colour toward the middle, crisp specular highlights on the upper left", "glass", "Flat pure black background", "radial-gradient(circle at 34% 28%,#fff 0 9%,transparent 11%),radial-gradient(circle at 50% 60%,#ff7aa8,#ffb3cc 70%)"],
+  clay: ["Clay", "Made of smooth matte clay with a soft satin finish, gentle even studio lighting, subtle soft shading", "solid", "Transparent background, the figure isolated with nothing behind it", "radial-gradient(circle at 35% 30%,#f6c9a8,#e39a6c 75%)"],
+  plush: ["Plush", "Made of soft short-pile plush fabric like a premium designer toy, fine fuzzy texture catching the light, gentle soft studio lighting, subtle seams only where the shape needs them", "solid", "Transparent background, the figure isolated with nothing behind it", "radial-gradient(circle at 40% 35%,#d8e9b8,#9cc27a 80%)"],
+  ceramic: ["Ceramic", "Made of glazed ceramic with a smooth glossy glaze, soft reflections and a clean bright highlight on the upper left, slightly pooled glaze toward the bottom", "solid", "Transparent background, the figure isolated with nothing behind it", "radial-gradient(circle at 33% 27%,#fff 0 8%,transparent 10%),linear-gradient(170deg,#9fd4e0,#2f7f99)"],
+  flat: ["Flat", "A flat vector illustration with clean solid colour fills and one soft highlight, no gradients, no outlines", "solid", "Transparent background, the figure isolated with nothing behind it", "#FF9F0A"],
 };
 const SWATCHES = __SWATCHES__;   // real material samples generated on Higgsfield, one per tile
-const MATCH = "Match the reference image exactly in material, surface finish, lighting, colours and rendering style; only the shape is different: ";
-// When each agent has its own colours, the reference image must not drag them back to agent 1's palette
-const MATCH_OWN = "Match the reference image exactly in material, surface finish, lighting and rendering style, but NOT its colours: use only the colours described below. The shape and colours are different: ";
+// Every agent has its own shape and colours, so the reference (agent 1) only sets the material and finish:
+// copying its shape or colours is what made casts look like one agent in different colours
+const MATCH_OWN = "Use the reference image only for the set's material, surface finish, lighting and rendering quality. Do NOT copy its shape, proportions, top features or colours: this character has its own shape and its own full, rich colours, described below. ";
 
 // ---------- state ----------
 const S = { mcp: null, sample: null, downloads: null, connected: false, credits: null, imageCost: 1.5,
-  step: "connect", inspo: [], count: 3, material: "auto", plan: null, agents: [], selected: 0, state: "idle", surface: "light", glow: 0, busy: false };
+  step: "connect", inspo: [], count: 3, material: "auto", plan: null, agents: [], selected: 0, state: "idle", surface: "light", glow: 0, eyeStyle: "classic", eyeScope: "all", busy: false };
 const $ = (id) => document.getElementById(id);
 const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const k in attrs) { const v = attrs[k]; if (k === "class") n.className = v; else if (k.startsWith("on")) n[k] = v; else if (v !== false && v != null) n.setAttribute(k, v); } for (const c of kids) if (c != null) n.append(c); return n; };
 const slug = (s) => (s || "agents").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "agents";
@@ -455,6 +572,10 @@ function go(step) {   // kept for older call sites: connect → create form, age
 function showPanel(p) {
   S.panel = p;
   for (const k of ["start", "sets", "create", "tune"]) $("p-" + k).hidden = k !== p;
+  $("hero").hidden = p !== "start"; $("sizesCard").hidden = p !== "tune"; document.body.classList.toggle("on-landing", p === "start"); document.querySelector("main.ws").classList.toggle("landing", p === "start");
+  if (p === "start" || S.lastPanel === "start") { castSig = ""; requestAnimationFrame(refreshStage); }   // the stage changes size: re-fit the agents
+  S.lastPanel = p;
+  if (p !== "tune" && S.appView) setAppView(false);
   if (p === "start") renderStart();
   if (p === "create") renderDescribe();
   if (p === "sets") renderSets();
@@ -463,7 +584,23 @@ function showPanel(p) {
 }
 function refreshStage() {
   if (S.agents.length) { if (heroLive.length) S.state = "idle"; stopHero(); castSig = ""; renderAgents(); }   // your agents start at rest, not mid example cycle
+  else if (S.panel === "create") { clearLive(live); clearLive(small); castSig = ""; renderPreview(); }
   else { clearLive(live); clearLive(small); castSig = ""; renderHero(); }
+}
+// The describe screen's stage previews your choices instead of example characters: one placeholder per agent in the
+// material you picked, gently floating, and your inspiration images along the top.
+function renderPreview() {
+  if (S.agents.length || S.panel !== "create") return;
+  stopHero(); $("hero").hidden = true;
+  // nothing on top of the frame here: the placeholders and the panel say it all
+  $("stage").dataset.surface = "light"; $("stageTag").textContent = ""; $("stageHint").textContent = ""; $("stageNote").textContent = "";
+  document.querySelector(".stage-bar").hidden = true;
+  const host = $("cast"), size = Math.round(sizeFor(host, S.count, 170) * 0.8);
+  const sig = `${S.count}|${S.material}|${S.inspo.length}`; if (renderPreview.sig === sig && host.childElementCount) return; renderPreview.sig = sig;
+  host.replaceChildren(...Array.from({ length: S.count }, (_, i) => el("div", { class: "slot pop-in", style: `animation-delay:${i * 60}ms` },
+    el("img", { class: "float", src: SWATCHES[S.material === "auto" ? "frosted" : S.material], alt: "", style: `width:${size}px;height:${size}px;object-fit:contain;filter:drop-shadow(0 14px 18px rgba(0,0,0,.14));animation-delay:${i * 0.4}s` }),
+    el("span", { class: "num" }, `Agent ${i + 1}`))));
+  if (S.inspo.length) host.append(el("div", { class: "preview-inspo" }, ...S.inspo.map((im) => el("img", { class: "pop-in", src: im.url, alt: "" }))));
 }
 function canGo(k) { return k === "connect" || (k === "describe" && S.connected) || (k === "agents" && S.agents.length > 0); }
 
@@ -515,6 +652,7 @@ function renderDescribe() {
   $("count").replaceChildren(...[1, 2, 3, 4, 5].map((n) => el("button", { "aria-pressed": String(n === S.count), onclick: () => { S.count = n; renderDescribe(); } }, String(n))));
   $("material").replaceChildren(...[["auto", "Auto", "conic-gradient(from 200deg,#ffb3cc,#8fb0ff,#9ef0dd,#f6c9a8,#ffb3cc)"], ...Object.entries(BODY_MATERIALS).map(([k, v]) => [k, v[0], v[4]])]
     .map(([k, l]) => el("button", { class: "mat", "aria-pressed": String(k === S.material), onclick: () => { S.material = k; renderDescribe(); } }, el("img", { class: "sw", src: SWATCHES[k], alt: "" }), l)));
+  renderPreview();
   const g = $("genBtn"); g.disabled = S.busy;
   g.replaceChildren(S.busy ? "Working…" : `Generate ${S.count} agent${S.count > 1 ? "s" : ""}`, S.busy ? "" : el("span", { class: "cost" }, cost(S.count)));
   renderInspo();
@@ -522,6 +660,7 @@ function renderDescribe() {
 function renderInspo() {
   const d = $("drop"); d.querySelectorAll(".thumb").forEach((t) => t.remove());
   S.inspo.forEach((im, i) => d.insertBefore(el("div", { class: "thumb" }, el("img", { src: im.url, alt: "Inspiration " + (i + 1) }), el("button", { "aria-label": "Remove image", onclick: (e) => { e.stopPropagation(); S.inspo.splice(i, 1); renderInspo(); } }, "×")), d.querySelector(".hint")));
+  renderPreview();
   d.querySelector(".hint").innerHTML = S.inspo.length >= MAX_INSPO ? `${MAX_INSPO} of ${MAX_INSPO} added` : S.inspo.length ? `${S.inspo.length} of ${MAX_INSPO}. Paste, drop or <u>browse</u> for more` : `Paste (⌘V), drop or <u>browse</u>. Up to ${MAX_INSPO} images`;
 }
 const MAX_INSPO = 5;
@@ -547,24 +686,78 @@ async function randomize() {
   S.sample = S.sample || (await CL.use("sample"));
   try {
     if (!S.sample) throw 0;
-    const r = await S.sample(`Write one short, vivid brief (max 25 words) for a cast of faceless mascot characters for AI agents, loosely inspired by "${seed}", made of ${BODY_MATERIALS[mat][0].toLowerCase()}. Name a palette of three colours. Plain text only, no quotes.`, { modelTier: "quick", cache: false });
-    $("prompt").value = r.text.trim();
-  } catch { $("prompt").value = `Friendly ${BODY_MATERIALS[mat][0].toLowerCase()} agents inspired by ${seed}, in a calm three-colour palette.`; }
+    // the count is picked above and the brief names it, so the agent picker matches what the brief says
+    const n = ["", "one", "two", "three", "four", "five"][S.count];
+    const amount = S.count === 1 ? 'exactly one agent (say "an agent" or "a single")' : `exactly ${n} agents (say "${n}", "a family of ${n}", "a squad of ${n}" or similar; the number ${n} must appear)`;
+    const r = await S.sample(`Write one brief that someone might type to create mascot characters for AI agents. Rules:
+- One sentence, 15 to 30 words, starting with "Create me".
+- Ask for ${amount}.
+- Theme: inspired by "${seed}". Turn it into a clear character idea, not a list of words.
+- Describe how they look: pick two or three of cute, round, chunky, squishy, simple, tiny, plump, bouncy, soft, sleek, tall and droopy, wobbly; plus one concrete feature that carries the theme (a leaf on top, little ears, a swirl, a flame tip...).
+- Name their colours, and say the material: ${BODY_MATERIALS[mat][0].toLowerCase()}.
+- No faces, eyes, arms, legs or props: the idea lives in the shape and colours. Describe them like toys, never with words about bodies.
+- Plain text, no quotes, no preamble.
+Example: Create me a family of four cute, round sprout buddies in soft frosted glass, each with a little leaf on top, in mint, lime and sunny yellow.`, { modelTier: "quick", cache: false });
+    $("prompt").value = r.text.trim().replace(/^["']|["']$/g, "");
+  } catch { $("prompt").value = `Create me ${S.count === 1 ? "a cute, round agent" : `a family of ${["", "one", "two", "three", "four", "five"][S.count]} cute, round agents`} inspired by ${seed}, in ${BODY_MATERIALS[mat][0].toLowerCase()}, each in its own soft colour.`; }
   b.disabled = false; b.textContent = "Randomize"; renderDescribe();
 }
 
-const PLAN_RULES = `You are designing a cast of mascot characters for AI agents. Each agent is a simple, soft 3D body with NO face (eyes are added later in code), shown alone, front view.
+const PLAN_RULES = `You are designing a cast of mascot characters for AI agents: playful, charming designer-toy characters (think soft vinyl toys). Each agent is a soft 3D body with NO face (eyes are added later in code), shown alone, front view.
 Return JSON only, with this shape:
 {"title": short name for the set, "material": one of ["glass","frosted","jelly","clay","plush","ceramic","flat"],
- "colors": "one sentence describing a soft vertical colour gradient inside the bodies, top to bottom, 3 colours",
- "agents": [{"role": what this agent does in four words or fewer, "shape": a plain description of the body's silhouette and any surface details, "colors": optional, see below}]}
-Colour: by default the whole set shares the one "colors" gradient. If the brief asks for each agent to have its own colour or gradient (or lists several palettes), give every agent its own "colors" sentence in the same form (a soft vertical gradient, top to bottom), clearly different from the others, and set the top-level "colors" to the first agent's. Otherwise leave out the per-agent "colors".
-Rules: exactly COUNT agents. The first agent is the simplest, most balanced shape (it is generated first and becomes the style reference).
-Every agent has a clearly different silhouette that still reads at 32px (sphere, rounded triangle pointing up, soft flame with three plump round tips, rounded cube seen from the front, one big dome with two small round bumps and a flat bottom, wide squat bean, leaning teardrop, puffy five-point star, soft heart...).
-Keep every body chunky and squat: about as wide as it is tall, never more than 1.2 times taller than wide. No tall, narrow or elongated bodies: no upright pills, capsules, rods, columns, bullets or domes on a stem.
-Theme details live only in the body's shape and surface (ribs, a short stem, a swirl inside the glass, a texture). Never a face, eyes, mouth, limbs, props, clothing, accessories or text.
-Bodies only: if the brief asks for arms, legs, hands, a face or clothing, leave them out and keep the idea in the body's shape, colour and surface. The body rests directly on its own bottom: no legs, feet, stubs or stands. Keep it polished and premium, never childish or cartoony unless the brief asks for it.
-Describe shapes by geometry rather than by naming objects when an object name might add a face or props.`;
+ "colors": "the first agent's colours, in the same form as below",
+ "agents": [{"role": what this agent does in four words or fewer, "shape": the body's silhouette, its top features and any surface details, "colors": "one sentence: a soft vertical colour gradient inside this body, top to bottom, 3 colours, plus the colour of any top features"}]}
+Rules: exactly COUNT agents.
+
+Variety is the default. The user should never have to ask for it. Treat the cast like a designer's exploration sheet: every agent is a different character idea from the same theme, so the set feels like a family but no two could be mistaken for each other, even at 32px. For example, from "sprout": a teardrop with two heart-shaped leaves; a tall drop with two long leaves on a thin stem; a mochi dumpling with a scalloped bottom and a single sprout; a turnip with a pointed tip and two rounded leaves; a little ghost with a wavy hem and a leaf on top.
+Across the cast, vary all of these:
+- Body family: teardrop, tall drop, mochi or dumpling, onion or turnip with a pointed tip, ghost with a scalloped or wavy hem, bean, bell, cloud, puffy star, soft cube, heart, egg... Use each family once.
+- Proportions: mix squat, round and taller bodies. At most one tall agent per cast, never more than 1.6 times taller than wide, and tall bodies must widen toward the bottom (a drop, a bell, a ghost). Never a thin, straight-sided or rod-like body: no pills, capsules, rods, columns, bullets or cylinders.
+- Top features that carry the theme: leaves, sprouts, ears, horns, petals, a tuft, flame tips, a little cap. Different on each agent, and part of the body, not a separate prop.
+- Bottom: flat, rounded, scalloped, wavy or pointed.
+- Colour: by default every agent gets its own colours. Keep the set harmonious by staying in the theme's family but give each agent a clearly different main hue or shade and its own accent (for sprouts: lime, mint, deep leaf green, yellow-green with an orange tip). Only give every agent the same colours if the brief explicitly asks for one shared or matching colour. If the brief names colours or palettes, spread them across the agents.
+The first agent is the most iconic, instantly readable take on the theme (it is generated first).
+Small soft nubs on the sides (like little mitten arms that are part of the body) are fine. Never real arms, hands, legs, feet, stands, a face, eyes, a mouth, clothing, held props or text: keep the idea in the body's shape, top features, colour and surface. Leave a smooth, clear area on the front of the body where the eyes will go.
+Object words are fine when they describe the silhouette ("shaped like a turnip"), but never ones that would bring a face or props with them.
+Write every shape and colour as a toy or object description, because image safety filters read words literally: say figure, base, middle, sides, surface and rounded, never body, bottom, belly, cheeks, skin, plump, curvy, naked or bare, and never mention clothing.`;
+
+// Inspiration images go to Higgsfield as style references for every agent, so the cast takes their look instead of
+// only what the planner put into words. The page uploads them itself (Higgsfield's upload links accept browser PUTs):
+// media_upload for signed links, a PUT per image, then media_confirm. Done once per set of images; if this page
+// can't reach the upload server, the images still guide the plan and the person is told.
+async function uploadInspo() {
+  const sig = S.inspo.map((i) => `${i.blob.size}:${i.blob.type}`).join("|");
+  if (!S.inspo.length) { S.inspoMedia = []; S.inspoSig = ""; return; }
+  if (S.inspoSig === sig && S.inspoMedia?.length) return;
+  S.inspoMedia = []; S.inspoSig = sig;
+  try {
+    const files = S.inspo.slice(0, 4).map((_, i) => ({ filename: `inspo-${i + 1}.jpg`, content_type: "image/jpeg" }));
+    const up = payload(await hf("media_upload", { files }));
+    const slots = Array.isArray(up?.uploads) ? up.uploads : dig(up, (k, v) => k === "uploads" && Array.isArray(v))[0] || [];
+    if (slots.length < files.length) throw new Error("no upload links");
+    await Promise.all(slots.slice(0, files.length).map(async (s, i) => {
+      const jpg = await toJpeg(S.inspo[i].blob, 1024);
+      const res = await fetch(s.upload_url, { method: "PUT", headers: { "Content-Type": "image/jpeg", "If-None-Match": "*" }, body: jpg });
+      if (!res.ok) throw new Error("upload " + res.status);
+    }));
+    const ids = slots.slice(0, files.length).map((s) => s.media_id);
+    await hf("media_confirm", { type: "image", media_ids: ids });
+    S.inspoMedia = ids;
+  } catch (e) {
+    S.inspoMedia = []; S.inspoSig = "";
+    LOG.push({ tool: "inspo-upload", error: String(e?.message || e).slice(0, 200) });
+    notice($("agentsMsg"), "Couldn't send your images to Higgsfield from this page, so they guide the plan but not the images themselves.");
+  }
+}
+// A small JPEG of an inspiration image (keeps uploads quick)
+async function toJpeg(blob, max) {
+  const bmp = await createImageBitmap(blob), k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return await new Promise((r) => c.toBlob(r, "image/jpeg", 0.86));
+}
+const INSPO_STYLE = (n) => `The ${n === 1 ? "reference image is" : `${n} reference images are`} the user's style inspiration. Match ${n === 1 ? "its" : "their"} overall look closely: the material and surface finish, the colour palette, the lighting, the rendering style and the shape language. But make a new character, exactly as described below: do not copy ${n === 1 ? "its" : "their"} exact shape, and never copy a face, eyes, mouth, text or logos from ${n === 1 ? "it" : "them"}. `;
 
 async function generateAll() {
   if (S.busy) return;
@@ -579,23 +772,46 @@ async function generateAll() {
     const canImg = !!lim?.images && S.inspo.length > 0;
     const input = PLAN_RULES.replace("COUNT", S.count) + `\n\nBrief from the user: ${text || "(none, use the images)"}` +
       (S.material !== "auto" ? `\nThe material must be "${S.material}".` : "") +
-      (canImg ? `\nThe attached images are the user's inspiration. Take the palette and mood from them; take subject motifs only where they can live in a body's shape or surface. If they show other characters, borrow proportions, not faces.` : "");
-    const plan = await S.sample.json(input, { modelTier: "default", cache: false, ...(canImg ? { images: S.inspo.slice(0, lim.images.maxCount || 4).map((i) => i.blob) } : {}) });
+      (canImg ? `\nThe attached images are the user's style inspiration, and the image model will see them too. Match their look: pick the material that fits them best, take each agent's colours from their palette, and give the shapes their shape language (soft or crisp, chunky or tall, simple or detailed). Still make every agent a different character idea, as the rules say. If they show characters with faces, borrow proportions and style, never faces. Make exactly ${S.count} agents, however many images there are: the images are one shared style reference, not one agent each. With fewer images than agents, invent new characters in their style; with more images than agents, blend them; either way, spread their motifs, shapes and colours across the cast so every agent is its own character.` : "");
+    const opts = { modelTier: "default", cache: false, ...(canImg ? { images: S.inspo.slice(0, lim.images.maxCount || 4).map((i) => i.blob) } : {}) };
+    const plan = await S.sample.json(input, opts);
     if (!plan || !Array.isArray(plan.agents) || !plan.agents.length) throw new Error("Claude returned an empty plan. Try again.");
+    // the count is the person's, not the number of images: if the plan came back short, ask once for the rest
+    if (plan.agents.length < S.count) {
+      const missing = S.count - plan.agents.length, have = plan.agents.map((a) => `- ${a.role}: ${a.shape}`).join("\n");
+      const more = await S.sample.json(PLAN_RULES.replace("COUNT", missing) + input.slice(PLAN_RULES.replace("COUNT", S.count).length).replace(`Make exactly ${S.count} agents`, `Make exactly ${missing} agents`) +
+        `\nThe cast already has these agents:\n${have}\nAdd ${missing} more in the same style and material, each a new character idea unlike these.`, opts).catch(() => null);
+      if (Array.isArray(more?.agents)) plan.agents.push(...more.agents.slice(0, missing));
+    }
     if (S.material !== "auto") plan.material = S.material;
     if (!BODY_MATERIALS[plan.material]) plan.material = "glass";
     S.plan = plan; clearLive(live); clearLive(small);
     S.agents = plan.agents.slice(0, S.count).map((a, i) => ({ id: "agent-" + (i + 1), label: "Agent " + (i + 1), role: a.role, shape: a.shape, colors: typeof a.colors === "string" && a.colors.trim() ? a.colors.trim() : null, status: "queued" }));
+    await uploadInspo();
     S.agents.forEach((a, i) => (a.prompt = buildPrompt(a, i)));
     S.selected = 0; go("agents");
     await runCast();
   } catch (e) { notice(S.agents.length ? $("agentsMsg") : $("describeMsg"), e?.code === "not_granted" ? "Claude needs your permission for this page. Click again and choose Allow." : errText(e), "bad"); }
   S.busy = false; renderDescribe(); if (S.agents.length) renderAgents(); refreshCredits();
 }
-function buildPrompt(a, i) {
+// Image safety filters read toy descriptions literally: words about human bodies or nudity ("body", "bottom",
+// "no clothing", "plump", "wet"...) next to "cute" can get a harmless mascot blocked as NSFW. Every prompt goes
+// through safeWords() before it's sent, and the template itself talks about a toy figure on a base.
+const SAFE_SWAPS = [[/\bbod(y|ies)\b/gi, (m) => (/ies$/i.test(m) ? "figures" : "figure")], [/\b(bottom|butt|bum)s?\b/gi, "base"], [/\bbell(y|ies)\b/gi, "middle"],
+  [/\b(cheeks?|hips?|thighs?)\b/gi, "sides"], [/\bskin\b/gi, "surface"], [/\bflesh(-| )?(toned|coloured|colored|tone)?\b/gi, "peach"], [/\b(plump|curvy|chubby|busty|voluptuous)\b/gi, "rounded"],
+  [/\b(squishy|squeezable)\b/gi, "soft"], [/\bwet(-looking)?\b/gi, "glossy"], [/\b(naked|nude|bare|undressed|sexy|sensual|seductive)\b/gi, "plain"],
+  [/,?\s*\bno (clothing|clothes)\b/gi, ""], [/\b(clothing|clothes|lingerie|bikini)\b/gi, "accessories"], [/\b(breasts?|nipples?|crotch|groin)\b/gi, ""]];
+function safeWords(text) { let s = String(text || ""); for (const [re, to] of SAFE_SWAPS) s = s.replace(re, to); return s.replace(/\s{2,}/g, " ").replace(/\s+([,.])/g, "$1"); }
+function buildPrompt(a, i, strict = false) {
   const [, msent, , bg] = BODY_MATERIALS[S.plan.material];
-  const body = `A minimalist mascot character body shaped like ${a.shape}, resting directly on its own bottom, completely blank with no eyes, no mouth, no face, no arms, no legs, no feet, no limbs, no markings, no accessories. Strict front view, straight head-on, centered, symmetrical. ${msent}. ${String(a.colors || S.plan.colors || "").trim().replace(/[.\s]+$/, "")}. No outer glow, no bloom, no halo, no light spilling onto the background, crisp clean silhouette. No shadow, no floor, no reflection beneath. ${bg}. Premium designer toy aesthetic, calm and refined. Octane render quality, high resolution, noise-free.`;
-  return i === 0 ? body : (a.colors ? MATCH_OWN : MATCH) + body;
+  const shape = safeWords(String(a.shape || "").trim().replace(/[.\s]+$/, ""));
+  const colours = safeWords(String(a.colors || S.plan.colors || "").trim().replace(/[.\s]+$/, ""));
+  const body = strict
+    // after a safety block: plainer still, a product shot of a toy object, no character words at all
+    ? `Product photo of a small vinyl toy figurine shaped like ${shape}, standing on its flat base. A smooth, blank, plain object with no face, no markings and no text. Strict front view, centered. ${msent}. ${colours}. No glow, no shadow, no floor. ${bg}. High resolution, noise-free.`
+    : `A designer-toy mascot figure shaped like ${shape}, standing on its flat base. It has no eyes, no mouth and no face (eyes are added later), with a smooth, clear area on the front where they will go. No arms, no legs, no feet, no props, no accessories, no text; its top features (leaves, ears, sprouts and the like) are part of the figure. Strict front view, straight head-on, centered. ${msent}. ${colours}. No outer glow, no bloom, no halo, no light spilling onto the background, crisp clean silhouette. No shadow, no floor, no reflection beneath. ${bg}. Premium soft vinyl designer toy, playful and charming, with a distinctive silhouette. Octane render quality, high resolution, noise-free.`;
+  if (S.inspoMedia?.length) return INSPO_STYLE(S.inspoMedia.length) + body;
+  return i === 0 ? body : MATCH_OWN + body;
 }
 async function runCast() {
   const hero = S.agents[0];
@@ -608,7 +824,7 @@ async function runJobs(list) {
   const hero = S.agents[0];
   list.forEach((a) => { a.status = "queued"; a.error = null; }); renderAgents();
   const transparent = BODY_MATERIALS[S.plan.material][2] === "solid";   // solid bodies come back pre-isolated, so the cutout never keys by colour
-  const reqs = list.map((a, i) => ({ index: i, params: { ...IMAGE_MODEL, ...(transparent ? { background: "transparent" } : {}), prompt: a.prompt, count: 1, ...(a !== hero && hero.jobId ? { medias: [{ value: hero.jobId, role: "image_references" }] } : {}) } }));
+  const reqs = list.map((a, i) => ({ index: i, params: { ...IMAGE_MODEL, ...(transparent ? { background: "transparent" } : {}), prompt: a.prompt, count: 1, ...(S.inspoMedia?.length ? { medias: S.inspoMedia.map((id) => ({ value: id, role: "image_references" })) } : a !== hero && hero.jobId ? { medias: [{ value: hero.jobId, role: "image_references" }] } : {}) } }));
   let jobs = [];
   try { const sub = payload(await hf("generate_image_batch", { requests: reqs, context: "Generating faceless mascot bodies for animated AI agents." }));
     jobs = Array.isArray(sub?.jobs) ? sub.jobs : dig(sub, (k, v) => k === "jobs" && Array.isArray(v))[0] || []; }
@@ -625,13 +841,25 @@ async function runJobs(list) {
       const row = rows.find((r) => r.job_id === a.jobId || r.id === a.jobId) || rows.find((r) => r.index === index); if (!row) continue;
       const st = String(row.status || "").toLowerCase();
       if (/complete|success|done|finished/.test(st)) { a.url = bestUrl(row); a.status = a.url ? "processing" : "error"; if (!a.url) a.error = "No image came back"; else finished.push(a); }
-      else if (/fail|error|cancel|nsfw|reject/.test(st)) { a.status = "error"; a.error = row.error || row.reason || "Couldn't make this one"; }
+      else if (/nsfw|moderat|safety|unsafe|reject|cancel/.test(st + " " + String(row.error || row.reason || "").toLowerCase())) { a.status = "error"; a.blocked = true; a.error = "Higgsfield's safety filter blocked this one"; }
+      else if (/fail|error/.test(st)) { a.status = "error"; a.error = row.error || row.reason || "Couldn't make this one"; }
     }
     renderAgents();
     for (const a of finished) { try { await processAgent(a); } catch (e) { a.status = "error"; a.error = errText(e); a.cutFailed = true; } renderAgents(); }
   }
   live.filter((a) => a.status === "generating").forEach((a) => { a.status = "error"; a.error = "Took too long"; });
-  renderAgents();
+  // A false-positive safety block (a toy read as something else): retry once with the plainer product-shot prompt
+  const blocked = list.filter((a) => a.blocked && !a.safeRetry);
+  if (blocked.length) {
+    blocked.forEach((a) => { a.safeRetry = true; a.blocked = false; a.prompt = buildPrompt(a, S.agents.indexOf(a), true); });
+    notice($("agentsMsg"), `Higgsfield's safety filter flagged ${blocked.length === 1 ? "one agent" : `${blocked.length} agents`}, so we're trying again with plainer wording.`);
+    await runJobs(blocked);
+    blocked.filter((a) => a.status === "error").forEach((a) => (a.error = "Blocked by Higgsfield's safety filter. Try describing just the shape, e.g. \"a round drop with two leaves\"."));
+    const still = blocked.filter((a) => a.status === "error").length;
+    notice($("agentsMsg"), still ? "Higgsfield's safety filter still blocked " + (still === 1 ? "one agent" : `${still} agents`) + ". Say what to change in its card, describing just the shape." : "Higgsfield's safety filter flagged one of these by mistake; it went through on a second try with plainer wording.");
+    renderAgents();
+  }
+  list.forEach((a) => { if (a.status === "ready") a.safeRetry = false; });
 }
 async function processAgent(a) {
   const mode = BODY_MATERIALS[S.plan.material][2];
@@ -643,6 +871,34 @@ async function processAgent(a) {
   let cfg = {}; try { cfg = JSON.parse(r.stdout.trim().split("\n").pop()); } catch {}
   a.bottom = cfg.bottom ?? 0.95; a.face = await autoFace(a.body); a.status = "ready";
 }
+// "What should change?": Claude rewrites this agent's description with the note (same rules as the planner), then it
+// regenerates from the new description, so the result differs on purpose. The agent shows as regenerating from the click.
+async function regenWithChange(i, change) {
+  if (S.busy) return;
+  const a = S.agents[i]; if (!a) return;
+  const was = a.status; a.status = "queued"; S.busy = true; renderAgents(); notice($("agentsMsg"), "");
+  let revised = null;
+  try {
+    S.sample = S.sample || (await CL.use("sample"));
+    if (!S.sample) throw new Error("Open this page on claude.ai to rewrite the description.");
+    const r = await S.sample(`You edit the description of one mascot toy figure for an image generator. It is a soft, faceless designer-toy shape (eyes are added later in code), shown alone, front view. Describe it as a toy or object: say figure, base, middle, sides and rounded, never body, bottom, belly, skin, plump or curvy.
+Apply the requested change and keep everything else as it is. Return only the new description of the shape, top features and surface, in one or two short sentences. Keep it a soft, distinctive body: never thin or rod-like (no pills, capsules or cylinders), never more than 1.6 times taller than wide. Top features like leaves, ears or sprouts are part of the body and are fine. Never add a face, eyes, mouth, limbs, props, clothing or text, even if asked: express the idea through the shape or surface. If the change is about colour, also return the new colours as a second line starting with "Colours: " (one sentence, a soft vertical gradient, top to bottom). Plain text, no quotes, no preamble.
+
+Current shape: ${a.shape}
+Current colours: ${a.colors || S.plan?.colors || ""}
+Change: ${change}`, { modelTier: "quick", cache: false });
+    const lines = String(r.text || "").trim().split(/\n+/);
+    const colourLine = lines.find((l) => /^colou?rs:/i.test(l));
+    revised = lines.filter((l) => l !== colourLine).join(" ").trim().replace(/^["']|["']$/g, "");
+    if (colourLine) a.colors = colourLine.replace(/^colou?rs:\s*/i, "").trim();
+    if (!revised) throw new Error("Claude didn't return a description. Try again.");
+  } catch (e) {
+    a.status = was; S.busy = false; renderAgents();
+    return notice($("agentsMsg"), e?.code === "not_granted" ? "Claude needs your permission for this page. Click again and choose Allow." : errText(e), "bad");
+  }
+  S.busy = false;
+  await regen(i, revised);
+}
 async function regen(i, newShape) {
   if (S.busy) return; S.busy = true; notice($("agentsMsg"), "");
   const a = S.agents[i];
@@ -653,10 +909,9 @@ async function regen(i, newShape) {
     S.busy = false; renderAgents(); return;
   }
   if (newShape) { a.shape = newShape; a.prompt = buildPrompt(a, i); }
-  a.body = null; a.cutFailed = false; a.url = null; renderAgents();
+  a.body = null; a.cutFailed = false; a.url = null; a.popped = false; renderAgents();
   try { if (i > 0 && S.agents[0].status !== "ready") await runJobs([S.agents[0]]); await runJobs([a]); }
   catch (e) { a.status = "error"; a.error = errText(e); }
-  if (i === 0 && a.status === "ready" && S.agents.length > 1) notice($("agentsMsg"), "Agent 1 sets the style. Regenerate the others if you want them to match it.");
   S.busy = false; renderAgents(); refreshCredits();
 }
 
@@ -673,7 +928,7 @@ async function autoFace(src) {
 }
 function faceCfg(a) {
   const f = a.face; if (!f) return {};
-  return { face: [f.cx, f.top + f.yRel * f.bh], dx: f.dxRel * f.bw, w: 0.105 * f.bw * f.sRel, h: Math.min(0.156 * f.bw, 0.2 * f.bh) * f.sRel, bottom: a.bottom ?? 0.95, scale: 1 };
+  return { face: [f.cx, f.top + f.yRel * f.bh], dx: f.dxRel * f.bw, w: 0.105 * f.bw * f.sRel, h: Math.min(0.156 * f.bw, 0.2 * f.bh) * f.sRel, bottom: a.bottom ?? 0.95, scale: 1, eyeStyle: a.eyeStyle || S.eyeStyle };
 }
 function sizeFor(host, n, max) {
   const W = (host.clientWidth || 700) - 8, Hh = host.clientHeight || 360, gap = Math.min(40, Math.max(8, W * 0.025));
@@ -716,11 +971,11 @@ function renderAgents() {
   const defs = {}; S.agents.forEach((a) => a.face && (defs[a.id] = faceCfg(a))); AgentRig.defineAgents(defs);
   S.agents.forEach((a, i) => {
     const slot = el("div", { class: "slot pick", "aria-current": String(i === S.selected), onclick: () => selectAndTune(i) });
-    if (a.status === "ready" && a.body) { const h = el("div"); slot.append(h); mountOne(h, a, size, live); }
+    if (a.status === "ready" && a.body) { const h = el("div"); slot.append(h); mountOne(h, a, size, live); if (!a.popped) { slot.classList.add("pop-in"); a.popped = true; } }
     else {
       const busy = ["queued", "generating", "processing"].includes(a.status);
       slot.append(el("div", { class: "pending", style: `width:${size}px;height:${size}px` }, busy ? el("span", { class: "bar" }, el("i")) : null,
-        busy ? { queued: "Queued", generating: "Rendering", processing: "Finishing" }[a.status] : (a.error || "Didn't render"),
+        busy ? "" : (a.error || "Didn't render"),
         // failsafe: a failed render gets its own retry right where it failed
         !busy ? el("button", { class: "btn sm", style: "margin-top:4px", disabled: S.busy ? "" : false, onclick: (e) => { e.stopPropagation(); S.selected = i; regen(i); } }, "Try again", el("span", { class: "cost" }, a.cutFailed && a.url ? "free" : cost(1))) : null));
     }
@@ -740,32 +995,57 @@ function renderDetail() {
   $("cast").querySelectorAll(".pending button").forEach((b) => (b.disabled = S.busy));   // retry buttons follow the busy state without a redraw
   if (S.agents.some((a) => a.status === "error")) $("debugFoot").hidden = false;   // something failed: offer the activity log
   const n = S.agents.length, ready = S.agents.filter((a) => a.status === "ready").length, working = S.agents.some((a) => ["queued", "generating", "processing"].includes(a.status));
-  $("stageTag").textContent = working && !ready ? "Generating" : (S.plan?.title || "Your agents");
-  $("stageNote").textContent = working ? `${ready} of ${n} ready · Agent 1 sets the style` : "Click an agent to tune it";
-  $("tuneTitle").textContent = working && !ready ? "Generating…" : (S.plan?.title || "Your agents");
-  $("tuneNote").textContent = working ? `${ready} of ${n} ready. Agent 1 sets the style, the rest follow.` : "Click an agent on the stage to tune its eyes.";
+  $("stageTag").textContent = S.appView ? "In your app" : working && !ready ? "Generating" : (S.plan?.title || "Your agents");
+  $("stageNote").textContent = ""; $("stageHint").textContent = working && !ready ? "" : S.appView ? "" : "Tap a character to edit it";
+  document.querySelector(".stage-bar").hidden = !!S.appView;
+  $("p-tune").classList.toggle("is-generating", working && !ready);
+  $("tuneTitle").textContent = working && !ready ? "Bringing your characters to life" : (S.plan?.title || "Your agents");
+  $("tuneNote").textContent = working ? `${ready} of ${n} ready. Each takes about 30–60 seconds and pops onto the stage when it's done.` : "They're alive. Try every state, pick their eyes and tune them. Not quite right? Say what to change and regenerate that one.";
   $("tuneBack").textContent = S.ready ? "← Change set" : "← New brief";
   const a = S.agents[S.selected], rdy = a?.status === "ready";
-  $("detailFor").textContent = a ? `${a.label}${a.role ? " · " + a.role : ""}` : "Pick an agent on the stage";
+  $("detailFor").textContent = a ? a.label : "Pick an agent on the stage";
   ["eyeY", "eyeDx", "eyeS"].forEach((id) => ($(id).disabled = !rdy));
   if (a?.face) { $("eyeY").value = a.face.yRel; $("eyeDx").value = a.face.dxRel; $("eyeS").value = a.face.sRel;
     $("eyeYv").textContent = a.face.yRel.toFixed(2); $("eyeDxv").textContent = a.face.dxRel.toFixed(2); $("eyeSv").textContent = a.face.sRel.toFixed(2); }
-  if (document.activeElement !== $("shapeText")) $("shapeText").value = a?.shape || "";
-  syncShape();
-  $("exportBtn").disabled = !ready || working;
+  // the eye picker shows the selected character's style (its own, or the set's); the scope toggle shows All / Selected
+  const shownStyle = S.agents[S.selected]?.eyeStyle || S.eyeStyle;
+  $("eyeStyle").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === shownStyle)));
+  $("eyeScope").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === S.eyeScope)));
+  renderCards();
+  $("exportBtn").disabled = !ready || working; $("agentBtn").disabled = !ready || working;
   $("ownTools").hidden = !!S.ready; $("readyNote").hidden = !S.ready;
+  $("appBtn").disabled = !ready || working; renderSnippet();
 
 }
 // Regenerate only means something once the description has changed, so it wakes up when you edit it
-function syncShape() {
-  const ta = $("shapeText"); ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight + 2, 220) + "px"; // grow with the text
-  const a = S.agents[S.selected], edited = !!a && $("shapeText").value.trim() !== "" && $("shapeText").value.trim() !== (a.shape || "").trim();
-  // One button for both: edited text gives a new shape, unchanged text gives a fresh take on the same one.
-  // A render whose cutout failed retries just the cutout, for free.
-  const freeRetry = !edited && a?.status === "error" && a.cutFailed && a.url;
-  $("regenBtn").disabled = S.busy || !a;
-  $("regenBtn").replaceChildren(a?.status === "error" && !edited ? "Try again" : "Regenerate", el("span", { class: "cost" }, freeRetry ? "free" : cost(1)));
-  $("shapeHint").textContent = edited ? "Regenerate makes a new image from your edited description." : "Regenerate as is for a fresh take, or edit the description for a new shape.";
+// "Change an agent": one card per agent (as in the web app). Redrawn only when an agent's status or picture
+// changes, so typing is never interrupted; notes typed in a card are kept by agent.
+const cardLive = []; let cardSig = "";
+S.notes = {};
+function renderCards() {
+  const host = $("agentCards"); if (!host) return;
+  const sig = S.agents.map((a) => `${a.id}:${a.status}:${a.body ? a.body.length : 0}`).join("|") + `|${S.busy}|${S.selected}|${S.eyeStyle}`;
+  if (sig === cardSig) return; cardSig = sig;
+  clearLive(cardLive); host.replaceChildren();
+  const defs = {}; S.agents.forEach((a) => a.face && (defs[a.id] = faceCfg(a))); AgentRig.defineAgents(defs);
+  S.agents.forEach((a, i) => {
+    const busy = ["queued", "generating", "processing"].includes(a.status), ready = a.status === "ready" && a.body;
+    const thumb = el("div", { class: "acard-t" });
+    if (ready) { const h = el("div"); thumb.append(h); mountOne(h, a, 48, cardLive, { interactive: false }); }
+    else thumb.append(busy ? el("span", { class: "bar", style: "width:32px" }, el("i")) : el("span", { class: "hint-s" }, "—"));
+    const status = busy ? { queued: "Starting…", generating: "Rendering…", processing: "Finishing…" }[a.status] : ready ? "Ready" : (a.error || "Didn't render");
+    const ta = el("textarea", { "aria-label": `What should change about ${a.label}`, placeholder: "What should change? e.g. rounder, more pink, add a leaf on top", rows: "2" });
+    ta.value = S.notes[a.id] || "";
+    const hint = el("span", { class: "hint-s" }, ta.value.trim() ? "Claude rewrites it with your change" : "");
+    const freeRetry = a.status === "error" && a.cutFailed && a.url;
+    const btn = el("button", { class: "btn sm glow", disabled: S.busy ? "" : false }, a.status === "error" && !ta.value.trim() ? "Try again" : "Regenerate", el("span", { class: "cost" }, freeRetry ? "free" : cost(1)));
+    ta.oninput = () => { S.notes[a.id] = ta.value; hint.textContent = ta.value.trim() ? "Claude rewrites it with your change" : ""; };
+    ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey && !S.busy) { e.preventDefault(); btn.click(); } };
+    btn.onclick = () => { const note = (S.notes[a.id] || "").trim(); S.notes[a.id] = ""; select(i); note ? regenWithChange(i, note) : regen(i, null); };
+    host.append(el("div", { class: "acard", "aria-current": String(i === S.selected) },
+      el("div", { class: "acard-h", onclick: () => select(i) }, thumb, el("div", {}, el("b", {}, a.label), el("small", {}, status))),
+      el("div", { class: "composer" }, ta, el("div", { class: "composer-bar" }, hint, btn))));
+  });
 }
 function tuneEyes() {
   const a = S.agents[S.selected]; if (!a?.face) return;
@@ -776,6 +1056,86 @@ function tuneEyes() {
 
 // ---------- export ----------
 function rigSource() { return $("rig-src").textContent.trim(); }
+// ---------- drop it in: a sample app on the stage, and the snippet ----------
+const appLive = [];
+const APP_SCRIPT = [
+  ["idle", "Online", "", null, 1800], ["thinking", "Thinking…", "busy", null, 2200],
+  ["working", "Working on it", "busy", "Checking 40 airlines and your calendar…", 3000],
+  ["done", "Done", "ok", "Found 3 flights that fit. The 9:40am is the cheapest.", 2600],
+  ["waiting", "Waiting for you", "busy", "Found 3 flights that fit. The 9:40am is the cheapest. Want me to book it?", 3200],
+];
+function setAppView(on) {
+  S.appView = on; clearTimeout(setAppView.t); clearLive(appLive);
+  $("appView").hidden = !on; $("cast").hidden = on; document.querySelector(".stage-bar").hidden = on;
+  $("appBtn").textContent = on ? "Back to the stage" : "See them in an app";
+  $("stageTag").textContent = on ? "In your app" : (S.plan?.title || "Your agents");
+  $("stageNote").hidden = on; $("stage").classList.toggle("app-on", on);
+  if (!on) { $("appView").replaceChildren(); return; }
+  const ready = S.agents.filter((a) => a.status === "ready" && a.body); if (!ready.length) return setAppView(false);
+  const [lead, ...team] = ready;
+  const head = el("div"), dot = el("i"), status = el("span"), body = el("div", { class: "app-b" }, el("p", { class: "me" }, "Find me a morning flight to Tokyo on Friday"));
+  const teamRow = el("div", { class: "team" });
+  $("appView").replaceChildren(el("div", { class: "app" },
+    el("div", { class: "app-h" }, head, el("div", {}, el("b", {}, "Your assistant"), el("small", {}, dot, status))), body,
+    team.length ? el("div", { class: "app-f" }, "Team", teamRow) : null));
+  const defs = {}; S.agents.forEach((a) => a.face && (defs[a.id] = faceCfg(a))); AgentRig.defineAgents(defs);
+  const leadAg = mountOne(head, lead, 56, appLive, { interactive: false });
+  const teamAgs = team.map((a) => { const h = el("div"); teamRow.append(h); return mountOne(h, a, 36, appLive, { interactive: false }); });
+  let i = 0;
+  const step = () => {
+    if (!S.appView) return;
+    const [st, label, tone, reply, ms] = APP_SCRIPT[i];
+    leadAg.setState(st); teamAgs.forEach((x, j) => x.setState(st === "working" && j % 2 === 0 ? "working" : "idle"));
+    status.textContent = label; dot.className = tone;
+    body.querySelectorAll(".it").forEach((n) => n.remove());
+    if (st === "thinking") body.append(el("p", { class: "it" }, "•••"));
+    if (reply) body.append(el("p", { class: "it" }, reply));
+    i = (i + 1) % APP_SCRIPT.length; setAppView.t = setTimeout(step, ms);
+  };
+  step();
+}
+// The prompt for a coding agent (Claude Code, Cursor...): most people building with these use one, so "send to your
+// agent" is the main action, with the kit download under it.
+function agentInstructions() {
+  const names = kitNames(), first = names[0] || "agents-1", file = `${slug(S.plan?.title)}-kit.zip`;
+  return `Add these animated agent characters to my app.
+
+1. Unzip ${file} and put its agents/ folder in my project (for React or Next.js, e.g. src/components/agents/).
+2. Characters: ${names.join(", ")}. Each one blinks, looks around and animates through states.
+3. React / Next.js: import { Agent } from "./agents/Agent" and render <Agent name="${first}" state={state} size={64} />.
+   Plain HTML: <script src="agents/live-agent.js"><\/script> then <live-agent name="${first}" state="idle" size="64"></live-agent>.
+4. Drive the state from what my AI is doing:
+   idle = ready and waiting for input, thinking = planning or reasoning, working = running tools or streaming a reply,
+   waiting = needs something from me, blocked = an error, done = finished, sleeping = inactive.
+5. Put the character next to the assistant in the UI (the chat header, the message composer or beside replies) and switch its state as each request progresses.
+6. Reduced motion is already handled. agents/README.md has the full API (sizes, glow, eye tuning).`;
+}
+async function copyText(txt) {
+  try { await navigator.clipboard.writeText(txt); return true; }
+  catch { const ta = el("textarea", { style: "position:fixed;opacity:0" }); ta.value = txt; document.body.append(ta); ta.select(); const ok = document.execCommand?.("copy"); ta.remove(); return !!ok; }
+}
+async function copyForAgent() {
+  const b = $("agentBtn"), ok = await copyText(agentInstructions());
+  b.textContent = ok ? "Copied: paste it into your coding agent" : "Couldn't copy: export the kit and see README.md";
+  setTimeout(() => (b.textContent = "Copy instructions for your coding agent"), 2400);
+}
+
+// The names match the exported kit (the kit's name plus a number), so the snippet works as pasted
+function kitNames() { const k = slug(S.plan?.title).replace(/-set$/, ""); return S.agents.map((_, i) => `${k}-${i + 1}`); }
+function renderSnippet() {
+  const name = kitNames()[0] || "agents-1";
+  $("snipCode").textContent = S.snipLang === "react"
+    ? `import { Agent } from "./agents/Agent";\n\n<Agent name="${name}" state={isBusy ? "working" : "idle"} size={64} />`
+    : `<script src="live-agent.js"><\/script>\n\n<live-agent name="${name}" state="thinking" size="64"></live-agent>`;
+  $("snipLang").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === (S.snipLang || "html"))));
+}
+async function copySnippet() {
+  const txt = $("snipCode").textContent, b = $("snipCopy");
+  try { await navigator.clipboard.writeText(txt); }
+  catch { const r = document.createRange(); r.selectNodeContents($("snipCode")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand?.("copy"); }
+  b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1500);
+}
+
 async function exportKit() {
   let ready = S.agents.filter((a) => a.status === "ready"); if (!ready.length) return;
   S.downloads = S.downloads || (await CL.use("downloads"));
@@ -968,7 +1328,7 @@ Change a number, reload. Motion respects the viewer's reduced-motion setting aut
 // ---------- example cast on the connect screen ----------
 let heroTimer = null;
 function renderHero() {
-  const host = $("cast"); clearLive(heroLive); host.replaceChildren();
+  const host = $("cast"); clearLive(heroLive); host.replaceChildren(); renderPreview.sig = ""; document.querySelector(".stage-bar").hidden = false;
   $("stage").dataset.surface = S.surface; $("stageTag").textContent = "Example"; $("stageNote").textContent = "";
   const size = sizeFor(host, EXAMPLES.length, 170);
   const defs = {}; EXAMPLES.forEach((e) => (defs[e.id] = faceCfg(e))); AgentRig.defineAgents(defs);
@@ -990,9 +1350,20 @@ async function boot() {
   $("tuneBack").onclick = () => showPanel(S.ready ? "sets" : "create");
   $("readyConnectBtn").onclick = () => { showPanel("start"); connect(); }; $("randomBtn").onclick = randomize; $("genBtn").onclick = generateAll;
   $("exportBtn").onclick = exportKit;
-  $("regenBtn").onclick = () => { const t = $("shapeText").value.trim(), cur = (S.agents[S.selected]?.shape || "").trim(); regen(S.selected, t && t !== cur ? t : null); };
-  $("shapeText").oninput = syncShape;
+  $("agentBtn").onclick = copyForAgent;
+  $("appBtn").onclick = () => setAppView(!S.appView);
+  $("snipCopy").onclick = copySnippet;
+  $("snipLang").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.snipLang = b.dataset.v; renderSnippet(); };
   ["eyeY", "eyeDx", "eyeS"].forEach((id) => ($(id).oninput = tuneEyes));
+  $("eyeScope").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.eyeScope = b.dataset.v; cardSig = ""; renderDetail(); renderAgents(); };
+  $("eyeStyle").onclick = (e) => { const b = e.target.closest("button"); if (!b) return;
+    const sel = S.agents[S.selected];
+    if (S.eyeScope === "selected" && sel) sel.eyeStyle = b.dataset.v;            // just this character
+    else { S.eyeStyle = b.dataset.v; S.agents.forEach((a) => delete a.eyeStyle); }   // the whole set
+    const styleOf = (id) => (S.agents.find((a) => a.id === id)?.eyeStyle) || S.eyeStyle;
+    [...live, ...small, ...cardLive, ...appLive].forEach((x) => { if (x.cfg) x.cfg.eyeStyle = styleOf(x.name); });
+    const defs = {}; S.agents.forEach((a) => a.face && (defs[a.id] = faceCfg(a))); AgentRig.defineAgents(defs);
+    cardSig = ""; renderDetail(); };
   $("glow").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.glow = +b.dataset.v; [...live, ...small, ...heroLive].forEach((x) => x.setGlow(S.glow)); $("glow").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); };
   $("surface").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.surface = b.dataset.v; $("stage").dataset.surface = S.surface; castSig = sigOf(); $("surface").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); };
   const drop = $("drop"), file = $("file");

@@ -18,7 +18,8 @@ The people using this skill are both designers (care about the look, the motion 
 The default way to run this skill is the **Agent Studio**, an LCA Labs page the person uses themselves, in three
 steps: connect Higgsfield; describe the agents (text and/or inspiration images, a material, 1 to 5 agents, or
 Randomize) and generate; then the agents arrive already animated, with every state, glow, light/dark, 48px and 32px
-previews, eye tuning, Regenerate per agent (edit the shape or keep it), and Export kit. Everything runs on their account and credits.
+previews, three eye styles (Classic, Kawaii, Smiley, whose mouths move with the state), eye tuning, Regenerate per
+agent (edit the shape or keep it), and Export kit. Everything runs on their account and credits.
 2D only: glossy materials (glass, frosted, jelly) give the 3D look. No Higgsfield account? The page offers three ready-made
 sets (flat, glass, plush; three agents each) with every state and a full export, so anyone gets usable assets. People can also skip the page and run the skill
 conversationally (the workflow further down); both should keep working.
@@ -121,6 +122,8 @@ optional colour settling along the bottom). See its docstring.
 
 Build the preview, screenshot it, and tune each agent's face in `agents.json` until the eyes sit where a face
 would be on that shape. Read `references/tuning.md` for what each setting does and typical values per shape.
+Offer the eye styles too: `"eyeStyle": "classic"` (the default), `"kawaii"` (big round eyes, a white rim, a shine and
+a tiny "w" mouth) or `"smiley"` (dot eyes and a wide smile), set on every agent so the set matches.
 
 ```bash
 python scripts/build_preview.py --kit <kit> --out <kit>/preview.html --title "<Project> agents"
@@ -165,7 +168,10 @@ Present the preview page and the zip. In a sentence or two: what's in it, how a 
 - **Grey halos around glass:** the source wasn't on pure black, or `solid` mode was used on glass. Re-cut.
 - **A wide agent looks small next to the others:** raise its `scale` (1.1 to 1.2).
 - **A generated set looks inconsistent:** regenerate the outliers with the approved hero as the reference image,
-  and repeat the "match the reference exactly" line at the start of the prompt.
+  and repeat the reference line at the start of the prompt (match the material and finish only).
+- **The agents all look alike** (one shape in different colours): the shapes were too similar or the reference line
+  copied the shape. Give each agent a different body family and top feature (`references/prompts.md`), and make sure
+  the reference line says not to copy shape, proportions or colours.
 - **Downloading generated images is blocked:** expected in some workspaces. Ask for the files, named by agent.
 - **The user wants 3D:** this skill is 2D on purpose; glossy materials (glass, frosted, jelly) give the 3D look.
 - **A themed agent comes out with a face or props** (a carved pumpkin face, a hat): repeat "completely blank with
